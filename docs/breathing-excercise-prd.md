@@ -145,12 +145,3 @@ In V1, success will be evaluated qualitatively:
 | Week 4 | Add help bubble + error/fallback handling |
 | Week 5 | Offline media setup and testing |
 | Week 6 | QA + polish + prepare for user testing/beta |
-
----
-
-## Open Questions
-
-- [ ] Confirm Oracle voiceover delivery format (`.mp3` recommended)
-- [ ] Confirm fallback assets are loaded in offline bundle
-- [ ] Insert Figma or image links to mockups
-
