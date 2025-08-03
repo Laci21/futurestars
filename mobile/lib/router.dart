@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'features/breathing/presentation/controller/breathing_controller.dart';
+import 'features/breathing/presentation/controller/breathing_animation_controller.dart';
+import 'features/breathing/presentation/widgets/breathing_bubble.dart';
+import 'features/breathing/presentation/widgets/progress_line.dart';
 import 'features/breathing/domain/breathing_phase.dart';
 
-// Placeholder breathing screen that shows phase info and navigation
-class BreathingPlaceholderScreen extends ConsumerWidget {
+// Test screen for breathing bubble component
+class BreathingPlaceholderScreen extends ConsumerStatefulWidget {
   const BreathingPlaceholderScreen({
     super.key,
     required this.phase,
@@ -14,29 +17,55 @@ class BreathingPlaceholderScreen extends ConsumerWidget {
   final BreathingPhase phase;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BreathingPlaceholderScreen> createState() => _BreathingPlaceholderScreenState();
+}
+
+class _BreathingPlaceholderScreenState extends ConsumerState<BreathingPlaceholderScreen> 
+    with TickerProviderStateMixin {
+  late BreathingAnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = BreathingAnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final ref = this.ref;
     final breathingState = ref.watch(breathingControllerProvider);
     final controller = ref.read(breathingControllerProvider.notifier);
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1D29), // Dark blue like designs
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Phase icon
-              Icon(
-                _getPhaseIcon(phase),
-                size: 100,
-                color: const Color(0xFF4A90E2),
+      body: Column(
+        children: [
+          // Progress line at the top - static during episode
+          const BreathingProgressLine(),
+          
+          // Main content
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+              // Test breathing bubble with animation
+              BreathingBubble(
+                animationController: _animationController,
+                currentPhase: widget.phase.name, // Use the page phase for display
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               
               // Phase title
               Text(
-                phase.displayName,
+                widget.phase.displayName,
                 style: const TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -47,7 +76,7 @@ class BreathingPlaceholderScreen extends ConsumerWidget {
               
               // Oracle message
               Text(
-                phase.oracleMessage,
+                widget.phase.oracleMessage,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 16,
@@ -55,7 +84,27 @@ class BreathingPlaceholderScreen extends ConsumerWidget {
                   height: 1.5,
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              
+              // Animation test controls
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _animationController.start(),
+                    child: const Text('Start'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _animationController.pause(),
+                    child: const Text('Pause'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _animationController.reset(),
+                    child: const Text('Reset'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
               
               // Current state info
               Container(
@@ -102,9 +151,11 @@ class BreathingPlaceholderScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-            ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

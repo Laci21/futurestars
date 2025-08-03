@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/breathing_phase.dart';
 import '../../../../shared/services/app_logger.dart';
@@ -82,6 +83,9 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
     if (nextPhase != null) {
       logInfo('Moving to next phase: ${nextPhase.displayName}');
       
+      // Haptic feedback on phase change
+      _triggerPhaseHaptic(nextPhase);
+      
       state = state.copyWith(
         phase: nextPhase,
         countdown: nextPhase.durationSeconds,
@@ -103,6 +107,39 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
       }
     } catch (e, stackTrace) {
       logWarning('Failed to play audio for phase: ${phase.displayName}', e, stackTrace);
+    }
+  }
+
+  /// Trigger haptic feedback for phase changes
+  /// Flutter Learning: Different haptic patterns for different interactions
+  void _triggerPhaseHaptic(BreathingPhase phase) {
+    try {
+      switch (phase) {
+        case BreathingPhase.intro:
+          // Light haptic for gentle start
+          HapticFeedback.lightImpact();
+          break;
+        case BreathingPhase.inhale:
+          // Medium haptic for active breathing phase
+          HapticFeedback.mediumImpact();
+          break;
+        case BreathingPhase.hold:
+          // Light haptic for pause phase
+          HapticFeedback.lightImpact();
+          break;
+        case BreathingPhase.exhale:
+          // Medium haptic for active breathing phase
+          HapticFeedback.mediumImpact();
+          break;
+        case BreathingPhase.success:
+          // Heavy haptic for completion celebration
+          HapticFeedback.heavyImpact();
+          break;
+      }
+      logInfo('Triggered haptic feedback for phase: ${phase.displayName}');
+    } catch (e, stackTrace) {
+      // Haptics might not be available on all devices - graceful fallback
+      logWarning('Failed to trigger haptic feedback', e, stackTrace);
     }
   }
 

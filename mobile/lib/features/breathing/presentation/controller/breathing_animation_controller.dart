@@ -17,8 +17,11 @@ class BreathingAnimationController {
   /// Master controller - single source of truth for timing
   late final AnimationController master;
 
-  /// Bubble scale animation (breathes in and out)
+  /// Bubble scale animation (breathes in and out) - main bubble with text
   late final Animation<double> bubbleScale;
+
+  /// Middle circle scale animation (subtle breathing)
+  late final Animation<double> middleCircleScale;
 
   /// Countdown animation (5 → 1)
   late final Animation<int> countdown;
@@ -42,19 +45,47 @@ class BreathingAnimationController {
         weight: 5, // 1 second
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.4).chain(
+        tween: Tween<double>(begin: 1.0, end: 1.2).chain(
           CurveTween(curve: Curves.easeInOutCubic)
-        ), // Grow during inhale
+        ), // Grow moderately during inhale
         weight: 25, // 5 seconds
       ),
       TweenSequenceItem(
-        tween: ConstantTween<double>(1.4), // Stay large during hold
+        tween: ConstantTween<double>(1.2), // Stay moderately large during hold
         weight: 25, // 5 seconds
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.4, end: 1.0).chain(
+        tween: Tween<double>(begin: 1.2, end: 1.0).chain(
           CurveTween(curve: Curves.easeInOutCubic)
         ), // Shrink during exhale
+        weight: 25, // 5 seconds
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(1.0), // Static during success
+        weight: 20, // 4 seconds
+      ),
+    ]).animate(master);
+
+    // Middle circle scale: very subtle breathing animation (much smaller range than main bubble)
+    middleCircleScale = TweenSequence<double>([
+      TweenSequenceItem(
+        tween: ConstantTween<double>(1.0), // Static during intro
+        weight: 5, // 1 second
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.0, end: 1.05).chain(
+          CurveTween(curve: Curves.easeInOutCubic)
+        ), // Grow very slightly during inhale
+        weight: 25, // 5 seconds
+      ),
+      TweenSequenceItem(
+        tween: ConstantTween<double>(1.05), // Stay very slightly larger during hold
+        weight: 25, // 5 seconds
+      ),
+      TweenSequenceItem(
+        tween: Tween<double>(begin: 1.05, end: 1.0).chain(
+          CurveTween(curve: Curves.easeInOutCubic)
+        ), // Shrink very slightly during exhale
         weight: 25, // 5 seconds
       ),
       TweenSequenceItem(
@@ -66,8 +97,8 @@ class BreathingAnimationController {
     // Progress: Linear progress through the exercise
     progress = Tween<double>(begin: 0.0, end: 1.0).animate(master);
 
-    // TODO: Implement countdown animation
-    // This will require custom animation logic to show 5→1 during timed phases
+    // Countdown animation: Shows 5→1 during timed phases
+    countdown = _createCountdownAnimation();
   }
 
   /// Start the breathing animation sequence
@@ -96,6 +127,30 @@ class BreathingAnimationController {
     master.reset();
   }
 
+  /// Create countdown animation that shows 5→1 during timed phases
+  Animation<int> _createCountdownAnimation() {
+    return AnimationProxy<int>(
+      parent: master,
+      getValue: (value) {
+        // Inhale phase: 0.05-0.3 (5 seconds)
+        if (value >= 0.05 && value < 0.3) {
+          final phaseProgress = (value - 0.05) / 0.25; // 0.0 to 1.0 within inhale
+          return (5.0 - (phaseProgress * 4.0)).floor().clamp(1, 5);
+        }
+        // Hold phase: 0.3-0.55 (5 seconds) - no countdown, show pause icon
+        if (value >= 0.3 && value < 0.55) {
+          return -1; // Special value for pause icon
+        }
+        // Exhale phase: 0.55-0.8 (5 seconds)
+        if (value >= 0.55 && value < 0.8) {
+          final phaseProgress = (value - 0.55) / 0.25;
+          return (5.0 - (phaseProgress * 4.0)).floor().clamp(1, 5);
+        }
+        return 0; // No countdown for intro/success
+      },
+    );
+  }
+
   /// Get current phase based on animation progress
   String getCurrentPhase() {
     final value = master.value;
@@ -110,4 +165,33 @@ class BreathingAnimationController {
   void dispose() {
     master.dispose();
   }
+}
+
+/// Custom animation proxy for countdown logic
+class AnimationProxy<T> extends Animation<T> {
+  AnimationProxy({
+    required this.parent,
+    required this.getValue,
+  });
+
+  final Animation<double> parent;
+  final T Function(double) getValue;
+
+  @override
+  T get value => getValue(parent.value);
+
+  @override
+  AnimationStatus get status => parent.status;
+
+  @override
+  void addListener(VoidCallback listener) => parent.addListener(listener);
+
+  @override
+  void removeListener(VoidCallback listener) => parent.removeListener(listener);
+
+  @override
+  void addStatusListener(AnimationStatusListener listener) => parent.addStatusListener(listener);
+
+  @override
+  void removeStatusListener(AnimationStatusListener listener) => parent.removeStatusListener(listener);
 }

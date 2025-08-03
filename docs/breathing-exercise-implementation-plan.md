@@ -61,7 +61,7 @@ lib/
         breathing_bubble.dart
         phase_title.dart
         countdown_text.dart
-        progress_indicator.dart
+        progress_line.dart
         sound_wave_widget.dart
         oracle_avatar.dart
         gradient_background.dart
@@ -101,7 +101,7 @@ class BreathingAnimationController {
 ```
 * **breathing_bubble.dart** – perfect circle that scales smoothly using master controller. Displays phase icons/countdown inside with glowing effect.  
 * **countdown_text.dart** – `AnimatedSwitcher` showing 5 → 1 synchronized with master controller.  
-* **progress_indicator.dart** – dotted progress bar at top showing current phase (4 dots total).  
+* **progress_line.dart** – yellow horizontal progress line at top showing exercise progress (as seen in design).  
 * **sound_wave_widget.dart** – animated waveform bars during breathing phases.  
 * **oracle_avatar.dart** – Oracle character implementation matching designs.  
 * **gradient_background.dart** – complex gradient backgrounds + scenery overlay matching designs exactly.  
@@ -111,7 +111,7 @@ class BreathingAnimationController {
 * **Performance**: Pre-cache all images using `precacheImage()` in `initState()`.
 
 ### Milestone 5 – Screens (2 days)
-* Each screen = `Scaffold` with `Stack` (gradient background → scenery → progress dots → Oracle → sound waves → bubble → text).  
+* Each screen = `Scaffold` with `Stack` (gradient background → scenery → progress line → Oracle → sound waves → bubble → text).  
 * **Pixel-perfect layouts**: Match design positioning exactly using `Positioned` and `SafeArea`.  
 * **Typography**: Use custom `TextStyle` matching design fonts/sizes with responsive scaling.  
 * Inhale, Hold, Exhale auto-advance on `AnimationStatus.completed`, calling `nextPhase()`.  
