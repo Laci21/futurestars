@@ -11,15 +11,41 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/main.dart';
 
 void main() {
-  testWidgets('Breathing exercise app loads', (WidgetTester tester) async {
+  testWidgets('Breathing exercise app loads with intro screen', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const ProviderScope(
       child: BreathingExerciseApp(),
     ));
 
-    // Verify that our breathing exercise app loads
-    expect(find.text('FutureStars'), findsOneWidget);
-    expect(find.text('Breathing Exercise'), findsOneWidget);
-    expect(find.text('App structure ready! 🎯'), findsOneWidget);
+    // Verify that our breathing exercise app loads with intro screen
+    expect(find.text('Intro'), findsOneWidget);
+    expect(find.text('Take a moment to breathe, transform each inhale into power.'), findsOneWidget);
+    expect(find.text('Next Phase'), findsOneWidget);
+    expect(find.text('Reset'), findsOneWidget);
+  });
+
+  testWidgets('Navigation works between breathing phases', (WidgetTester tester) async {
+    // Build our app
+    await tester.pumpWidget(const ProviderScope(
+      child: BreathingExerciseApp(),
+    ));
+
+    // Should start at intro
+    expect(find.text('Intro'), findsOneWidget);
+
+    // Tap next phase button
+    await tester.tap(find.text('Next Phase'));
+    await tester.pumpAndSettle();
+
+    // Should navigate to inhale
+    expect(find.text('Inhale'), findsOneWidget);
+    expect(find.text('Inhale slowly for 5 seconds and fill your lungs.'), findsOneWidget);
+
+    // Tap next phase again
+    await tester.tap(find.text('Next Phase'));
+    await tester.pumpAndSettle();
+
+    // Should navigate to hold
+    expect(find.text('Hold'), findsOneWidget);
   });
 }
