@@ -206,24 +206,7 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
     state = state.copyWith(isAudioLoaded: loaded);
   }
 
-  /// Reset to initial state and stop audio
-  Future<void> reset() async {
-    try {
-      // Stop all audio when resetting
-      final audioService = _ref.read(audioServiceProvider);
-      await audioService.stopAll();
-    } catch (e, stackTrace) {
-      logWarning('Failed to stop audio during reset', e, stackTrace);
-    }
-    
-    state = const BreathingState(
-      phase: BreathingPhase.intro,
-      countdown: 0,
-      isAudioLoaded: false,
-      elapsed: Duration.zero,
-      progress: 0.0,
-    );
-  }
+
 
   /// Calculate progress through the entire exercise
   double _calculateProgress(BreathingPhase phase) {
