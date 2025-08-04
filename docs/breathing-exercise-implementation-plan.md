@@ -138,7 +138,36 @@ try {
 ```
 
 ### Milestone 7 – Help modal (1 hr)
-* `showModalBottomSheet` containing help PNG and text.
+* **Help Button Design**: Circular button in top-right corner of all breathing screens
+  - Position: Top-right corner of all screens (intro, inhale, hold, exhale, success)
+  - Style: 40x40px circular button with soft shadow
+  - Colors: Semi-transparent navy background `Color(0xFF1F2951).withOpacity(0.8)` with white "?" icon
+  - Matches existing design system (similar to intro arrow button but smaller)
+* **Help Overlay Implementation**: Floating overlay matching help.png design (not bottom sheet)
+  - White rounded bubble with soft shadow positioned over current screen
+  - Close "×" button in top-right corner of bubble
+  - Gentle fade-in/out animation
+  - Dismiss on tap outside bubble or close button
+* **Help Content**: Brief breathing exercise explanation
+```
+Need Help?
+
+This is a guided breathing exercise to help you feel calm and focused.
+
+• Tap "Begin Breathing" to start
+• Follow the Oracle's voice instructions  
+• Inhale for 5 seconds when prompted
+• Hold your breath briefly
+• Exhale for 5 seconds to complete
+• The glowing bubble will guide your timing
+
+Your breath is your superpower - use it to find strength and calm before your next challenge.
+```
+* **Technical Implementation**:
+  - Create `help_button.dart` (reusable help button widget)
+  - Create `help_overlay.dart` (help modal content matching design)
+  - Add help button to `BreathingExerciseScreen` for all phases
+  - Use overlay/dialog system for proper dismissal behavior
 
 ### Milestone 8 – Polish & multi-device checks (½ day)
 * **Device testing**: Test on iPhone SE (small) and iPad (large) - portrait locked via `SystemChrome`.  
@@ -150,9 +179,63 @@ try {
 * Complete accessibility: semantic labels for all interactive elements.
 
 ### Milestone 9 – Widget testing (½ day)
-* Use the `clock` or `fake_async` package to time-travel in tests instead of waiting real seconds.  
-* Create one widget test: pump `InhaleScreen`, advance fake clock 5 s, expect navigation to `HoldScreen`.  
-* Add a unit test for `BreathingController` step order and reset.
+* **Widget Test Strategy**: Test the single `BreathingExerciseScreen` with phase transitions (matches current architecture)
+* **Animation Testing**: Use real `BreathingAnimationController` with `fake_async` for time control
+* **Audio Mocking**: Mock audio service for deterministic tests without audio hardware dependencies
+
+#### 9.1 Widget Test - Breathing Phase Auto-Advancement
+* Test file: `test/widget_test.dart` (replace existing placeholder tests)
+* **Setup**: 
+  - Use `fake_async` to control time passage
+  - Create real `BreathingAnimationController` (tests actual timing logic)
+  - Mock audio service to avoid flaky audio loading
+  - Wrap `BreathingExerciseScreen` in `ProviderScope` with mocked providers
+* **Test Flow**:
+  ```dart
+  testWidgets('Breathing phases auto-advance with correct timing', (WidgetTester tester) async {
+    await tester.fakeAsync((async) {
+      // 1. Start at intro phase, tap "Begin Breathing"
+      // 2. Advance fake clock 5s → expect inhale → hold transition
+      // 3. Advance another 2s → expect hold → exhale transition  
+      // 4. Advance another 5s → expect exhale → success transition
+      // 5. Verify final success state with Episode 3 navigation option
+    });
+  });
+  ```
+* **Assertions**: Verify phase-specific UI elements appear/disappear at correct timing intervals
+* **Benefits**: Tests real animation timing but executes instantly, catches timing synchronization bugs
+
+#### 9.2 Unit Test - BreathingController Logic
+* Test file: `test/breathing_controller_test.dart` (new file)
+* **Setup**: Test `BreathingController` in isolation without Flutter widgets
+* **Test Cases**:
+  ```dart
+  group('BreathingController', () {
+    test('progresses through phases in correct order', () {
+      // Test: intro → inhale → hold → exhale → success
+    });
+    
+    test('calculates progress correctly', () {
+      // Test: progress goes from 0.0 → 1.0 across all phases
+    });
+    
+    test('resets to initial state correctly', () {
+      // Test: reset() returns to intro phase with clean state
+    });
+    
+    test('handles audio loading states', () {
+      // Test: isAudioLoaded flag updates correctly
+    });
+  });
+  ```
+* **Mocking**: Mock audio service dependencies using `mockito` or manual mocks
+* **Benefits**: Fast unit tests focused on business logic without UI complexity
+
+#### 9.3 Test Dependencies & Setup
+* **Dependencies**: `fake_async: ^1.3.1` (already added), consider adding `mockito` for audio mocking
+* **Mock Strategy**: Create mock audio service that simulates loading/playing without actual audio
+* **Test Execution**: Both tests should run quickly (<1 second each) and be deterministic
+* **Coverage Focus**: Core breathing exercise timing and state management logic
 
 ### Milestone 10 – Build & release (1 hr)
 * Configure **app icon & splash screen** with `flutter_launcher_icons` and `flutter_native_splash`.  

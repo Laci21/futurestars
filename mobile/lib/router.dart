@@ -6,6 +6,7 @@ import 'features/breathing/presentation/controller/breathing_animation_controlle
 import 'features/breathing/presentation/widgets/breathing_bubble.dart';
 import 'features/breathing/presentation/widgets/progress_line.dart';
 import 'features/breathing/presentation/screens/breathing_exercise_screen.dart';
+import 'features/breathing/presentation/screens/episode3_placeholder_screen.dart';
 import 'features/breathing/domain/breathing_phase.dart';
 
 // Test screen for breathing bubble component
@@ -193,7 +194,19 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/breathing-exercise',
       name: 'breathing-exercise',
-      builder: (context, state) => const BreathingExerciseScreen(),
+      pageBuilder: (context, state) => CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: const BreathingExerciseScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Slide from right when coming from Episode 3 (going back)
+          return SlideTransition(
+            position: animation.drive(
+              Tween(begin: const Offset(-1.0, 0.0), end: Offset.zero),
+            ),
+            child: child,
+          );
+        },
+      ),
     ),
     // Breathing Exercise Routes
     GoRoute(
@@ -234,37 +247,18 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/episode3-placeholder',
       name: 'episode3',
-      builder: (context, state) => const Scaffold(
-        backgroundColor: Color(0xFF1A1D29),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.upcoming,
-                size: 80,
-                color: Color(0xFF4A90E2),
-              ),
-              SizedBox(height: 24),
-              Text(
-                'Episode 3',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Coming Soon!',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white70,
-                ),
-              ),
-            ],
-          ),
-        ),
+      pageBuilder: (context, state) => CustomTransitionPage<void>(
+        key: state.pageKey,
+        child: const Episode3PlaceholderScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          // Slide from right when coming from Episode 2 (going forward)
+          return SlideTransition(
+            position: animation.drive(
+              Tween(begin: const Offset(1.0, 0.0), end: Offset.zero),
+            ),
+            child: child,
+          );
+        },
       ),
     ),
   ],

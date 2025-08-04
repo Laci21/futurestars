@@ -2,9 +2,14 @@ import 'package:flutter/material.dart';
 import 'responsive_text.dart';
 
 /// Episode progress lines exactly matching the design
-/// Shows dashed lines with Episode 2 (breathing exercise) as active yellow line
+/// Shows dashed lines with specified episode as active yellow line
 class BreathingProgressLine extends StatelessWidget {
-  const BreathingProgressLine();
+  const BreathingProgressLine({
+    super.key,
+    this.activeEpisode = 2,
+  });
+
+  final int activeEpisode;
 
   @override
   Widget build(BuildContext context) {
@@ -19,17 +24,12 @@ class BreathingProgressLine extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Episode 1 - should be grey like others (not white)
-                  _buildDashedLine(isActive: false, isCompleted: false),
-                  const SizedBox(width: 2),
-                  
-                  // Episode 2 - current/active (yellow dashed) 
-                  _buildDashedLine(isActive: true, isCompleted: false),
-                  const SizedBox(width: 2),
-                  
-                  // Episodes 3-15 - future (gray dashed) - 15 total as per design
-                  for (int i = 3; i <= 15; i++) ...[
-                    _buildDashedLine(isActive: false, isCompleted: false),
+                  // Generate all 15 episodes dynamically
+                  for (int i = 1; i <= 15; i++) ...[
+                    _buildDashedLine(
+                      isActive: i == activeEpisode,
+                      isCompleted: i < activeEpisode,
+                    ),
                     if (i < 15) const SizedBox(width: 2),
                   ],
                 ],
@@ -39,7 +39,7 @@ class BreathingProgressLine extends StatelessWidget {
             
             // Episode label matching design
             Text(
-              'E2: Shadow Swagger Showdown',
+              _getEpisodeLabel(),
               style: ResponsiveTextStyles.episodeLabel,
               textAlign: TextAlign.center,
             ),
@@ -76,5 +76,17 @@ class BreathingProgressLine extends StatelessWidget {
         ] : null,
       ),
     );
+  }
+
+  /// Get the episode label based on the active episode
+  String _getEpisodeLabel() {
+    switch (activeEpisode) {
+      case 2:
+        return 'E2: Shadow Swagger Showdown';
+      case 3:
+        return 'E3: Mystic Mind Mastery';
+      default:
+        return 'E$activeEpisode: Coming Soon';
+    }
   }
 }

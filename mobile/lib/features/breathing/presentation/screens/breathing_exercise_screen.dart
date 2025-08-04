@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../controller/breathing_controller.dart';
 import '../controller/breathing_animation_controller.dart';
@@ -9,6 +10,8 @@ import '../widgets/oracle_avatar.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sound_wave_widget.dart';
 import '../widgets/responsive_text.dart';
+import '../widgets/help_button.dart';
+import '../widgets/episode_swipe_wrapper.dart';
 import '../../domain/breathing_phase.dart';
 import '../../../../shared/providers/audio_provider.dart';
 
@@ -98,14 +101,26 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              // Episode progress lines at top - static throughout
-              const BreathingProgressLine(),
+              // Main content
+              Column(
+                children: [
+                  // Episode progress lines at top - static throughout
+                  const BreathingProgressLine(),
+                  
+                  // Dynamic content based on current phase
+                  Expanded(
+                    child: _buildPhaseContent(breathingState.phase),
+                  ),
+                ],
+              ),
               
-              // Dynamic content based on current phase
-              Expanded(
-                child: _buildPhaseContent(breathingState.phase),
+              // Help button in top-right corner
+              const Positioned(
+                top: 16,
+                right: 16,
+                child: HelpButton(),
               ),
             ],
           ),
@@ -227,13 +242,18 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                     child: InkWell(
                       onTap: _startBreathingExercise,
                       borderRadius: BorderRadius.circular(28),
-                                              child: const Center(
+                      child: Semantics(
+                        label: 'Begin breathing exercise',
+                        hint: 'Start the guided breathing exercise with Oracle instructions',
+                        button: true,
+                        child: const Center(
                           child: Icon(
                             Icons.arrow_forward,
                             color: Color(0xFFFFD700), // Bright gold to match progress line
                             size: 24, // 24px as per design
                           ),
                         ),
+                      ),
                     ),
                   ),
                 ),
@@ -402,89 +422,96 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
   }
 
   Widget _buildSuccessContent() {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 400),
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 40), // Top spacing to match other screens
-            // Oracle avatar with success message (per success1.png and success2.png)
-            Column(
-              children: [
-                // First row: Oracle avatar left, "Fantastic job!" right
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    const OracleAvatar(size: 50),
-                    const SizedBox(width: 16),
-                    
-                    // Only first line next to avatar
-                    Expanded(
-                      child: Text(
-                        'Fantastic job!',
-                        style: ResponsiveTextStyles.heading,
-                      ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 8),
-                
-                // Rest of text below avatar (centered)
-                RichText(
-                  textAlign: TextAlign.center,
-                  text: TextSpan(
-                    style: ResponsiveTextStyles.body,
+    return EpisodeSwipeWrapper(
+      showRightButton: true,
+      rightEpisodeNumber: 3,
+      onSwipeLeft: () => context.go('/episode3-placeholder'), // Only left swipe works
+      onSwipeRight: null, // No right swipe allowed
+      swipeHintText: 'Swipe left for Episode 3',
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 40), // Top spacing to match other screens
+              // Oracle avatar with success message (per success1.png and success2.png)
+              Column(
+                children: [
+                  // First row: Oracle avatar left, "Fantastic job!" right
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextSpan(
-                        text: 'Your breath is your superpower',
-                        style: ResponsiveTextStyles.body.copyWith(
-                          color: const Color(0xFFAEAFFC).withOpacity(0.8), // Same purple as "breathe"
+                      const OracleAvatar(size: 50),
+                      const SizedBox(width: 16),
+                      
+                      // Only first line next to avatar
+                      Expanded(
+                        child: Text(
+                          'Fantastic job!',
+                          style: ResponsiveTextStyles.heading,
                         ),
                       ),
-                      const TextSpan(text: ',\noffering strength and calm.'),
                     ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Trust it to guide you and\nempower your journey ahead.',
-                  textAlign: TextAlign.center,
-                  style: ResponsiveTextStyles.body,
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Success green icon (hand gesture like design)
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF00D968), // Bright vibrant green to match design
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00D968).withOpacity(0.4),
-                    blurRadius: 20,
-                    spreadRadius: 5,
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Rest of text below avatar (centered)
+                  RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: ResponsiveTextStyles.body,
+                      children: [
+                        TextSpan(
+                          text: 'Your breath is your superpower',
+                          style: ResponsiveTextStyles.body.copyWith(
+                            color: const Color(0xFFAEAFFC).withOpacity(0.8), // Same purple as "breathe"
+                          ),
+                        ),
+                        const TextSpan(text: ',\noffering strength and calm.'),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Trust it to guide you and\nempower your journey ahead.',
+                    textAlign: TextAlign.center,
+                    style: ResponsiveTextStyles.body,
                   ),
                 ],
               ),
-              child: const Icon(
-                Icons.thumb_up,
-                size: 40,
-                color: Colors.white,
+              
+              const SizedBox(height: 16),
+              
+              // Success green icon (hand gesture like design)
+              Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF00D968), // Bright vibrant green to match design
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00D968).withOpacity(0.4),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.thumb_up,
+                  size: 40,
+                  color: Colors.white,
+                ),
               ),
-            ),
-            
-            const SizedBox(height: 24), // Bottom spacing
-          ],
+              
+              const SizedBox(height: 160), // Extra bottom spacing for episode navigation
+            ],
+          ),
         ),
       ),
     );
