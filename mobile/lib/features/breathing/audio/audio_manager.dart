@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
 import '../../../shared/services/audio_service.dart';
@@ -6,6 +7,15 @@ import '../../../shared/services/app_logger.dart';
 /// Production audio manager for the breathing exercise
 /// Handles background music, Oracle voiceovers, and audio focus management
 class AudioManager with LoggerMixin implements AudioService {
+  
+  /// Voice clip asset paths mapping
+  static const Map<String, String> _voiceClipPaths = {
+    'intro': 'assets/audio/oracle_intro.m4a',
+    'inhale': 'assets/audio/oracle_inhale.m4a',
+    'hold': 'assets/audio/oracle_hold.m4a',
+    'exhale': 'assets/audio/oracle_exhale.m4a',
+    'success': 'assets/audio/oracle_success.m4a',
+  };
 
   // Audio players
   late final AudioPlayer _backgroundMusicPlayer;
@@ -18,6 +28,9 @@ class AudioManager with LoggerMixin implements AudioService {
   bool _isInitialized = false;
   bool _backgroundMusicLoaded = false;
   bool _voiceoversLoaded = false;
+  
+  // Audio session interruption subscription
+  StreamSubscription<AudioInterruptionEvent>? _interruptionSubscription;
 
   /// Initialize the audio manager
   @override
@@ -33,9 +46,12 @@ class AudioManager with LoggerMixin implements AudioService {
       _backgroundMusicPlayer = AudioPlayer();
       _voiceoverPlayer = AudioPlayer();
 
-      // TODO: Load placeholder audio assets
+      // Load audio assets
       await _loadBackgroundMusic();
       await _loadVoiceovers();
+      
+      // Set up audio session interruption handling
+      _setupAudioInterruptions();
 
       _isInitialized = true;
       logInfo('Audio manager initialized successfully');
@@ -46,34 +62,29 @@ class AudioManager with LoggerMixin implements AudioService {
     }
   }
 
-  /// Load background music (placeholder for now)
+  /// Load background music
   Future<void> _loadBackgroundMusic() async {
     try {
-      // TODO: Add Creative Commons meditation/nature sounds
-      // await _backgroundMusicPlayer.setAsset('assets/audio/background_music.mp3');
+      await _backgroundMusicPlayer.setAsset('assets/audio/background_music.m4a');
       _backgroundMusicLoaded = true;
       logInfo('Background music loaded successfully');
     } catch (e, stackTrace) {
-      logWarning('Background music loading failed', e, stackTrace);
+      logWarning('Background music loading failed: assets/audio/background_music.m4a', e, stackTrace);
       _backgroundMusicLoaded = false;
     }
   }
 
-  /// Load Oracle voiceovers (placeholder for now)
+  /// Load Oracle voiceovers - just mark as ready for lazy loading
   Future<void> _loadVoiceovers() async {
     try {
-      // TODO: Add text-to-speech or placeholder audio clips
-      // Voiceovers needed:
-      // - intro.mp3: "Take a moment to breathe..."
-      // - inhale.mp3: "Inhale slowly for 5 seconds..."
-      // - hold.mp3: "Hold the breath for a while..."
-      // - exhale.mp3: "Exhale slowly for 5 seconds..."
-      // - success.mp3: "Fantastic job! Your breath is your superpower..."
+      logInfo('Voiceovers ready for lazy loading (no pre-caching)');
       
+      // Don't pre-cache anymore - just mark as loaded
+      // Files will be validated when actually played
       _voiceoversLoaded = true;
-      logInfo('Voiceovers loaded successfully');
+      
     } catch (e, stackTrace) {
-      logWarning('Voiceovers loading failed', e, stackTrace);
+      logError('Voiceover initialization failed', e, stackTrace);
       _voiceoversLoaded = false;
     }
   }
@@ -81,7 +92,15 @@ class AudioManager with LoggerMixin implements AudioService {
   /// Start background music
   @override
   Future<void> startBackgroundMusic() async {
-    if (!_isInitialized || !_backgroundMusicLoaded) return;
+    if (!_isInitialized) {
+      logWarning('Cannot start background music - audio not initialized');
+      return;
+    }
+    
+    if (!_backgroundMusicLoaded) {
+      logWarning('Background music not loaded - continuing without background music');
+      return;
+    }
     
     try {
       await _backgroundMusicPlayer.setLoopMode(LoopMode.one);
@@ -95,34 +114,87 @@ class AudioManager with LoggerMixin implements AudioService {
   /// Play Oracle voiceover with volume ducking
   @override
   Future<void> playVoiceClip(String clipName) async {
-    if (!_isInitialized || !_voiceoversLoaded) return;
+    if (!_isInitialized || !_voiceoversLoaded) {
+      logWarning('Audio not ready for voiceover: $clipName');
+      return;
+    }
+    
+    final assetPath = _voiceClipPaths[clipName];
+    if (assetPath == null) {
+      logError('Unknown voice clip: $clipName');
+      return;
+    }
     
     try {
-      // Duck background music volume
-      await _backgroundMusicPlayer.setVolume(0.3);
+      // Duck background music volume smoothly
+      await _fadeVolume(_backgroundMusicPlayer, 1.0, 0.3, const Duration(milliseconds: 300));
       
-      // TODO: Load and play specific voiceover clip
-      // await _voiceoverPlayer.setAsset('assets/audio/$clipName.mp3');
-      // await _voiceoverPlayer.play();
+      // Load and play voiceover with detailed error handling
+      try {
+        await _voiceoverPlayer.setAsset(assetPath);
+        await _voiceoverPlayer.play();
+        
+        // Wait for voiceover to complete
+        await _voiceoverPlayer.playerStateStream.firstWhere(
+          (state) => state.processingState == ProcessingState.completed,
+        );
+      } catch (audioError, audioStackTrace) {
+        logError('Audio loading/playback error for $clipName', audioError, audioStackTrace);
+        
+        if (audioError.toString().contains('Operation Stopped')) {
+          logWarning('Audio format issue detected for $assetPath');
+        }
+        
+        // Continue without voiceover rather than crashing
+        logWarning('Continuing exercise without voiceover for: $clipName');
+      }
       
-      // Restore background music volume after voiceover
-      await Future.delayed(const Duration(seconds: 3)); // Placeholder duration
-      await _backgroundMusicPlayer.setVolume(1.0);
-      logDebug('Played voiceover: $clipName');
+      // Restore background music volume smoothly
+      await _fadeVolume(_backgroundMusicPlayer, 0.3, 1.0, const Duration(milliseconds: 300));
+      
     } catch (e, stackTrace) {
-      logError('Voiceover playback failed for $clipName', e, stackTrace);
+      logError('Overall voiceover process failed for $clipName', e, stackTrace);
       // Restore volume even on error
-      await _backgroundMusicPlayer.setVolume(1.0);
+      await _fadeVolume(_backgroundMusicPlayer, null, 1.0, const Duration(milliseconds: 300));
     }
   }
 
-  /// Stop all audio
+  /// Stop current voiceover only
+  @override
+  Future<void> stopVoiceover() async {
+    try {
+      await _voiceoverPlayer.stop();
+      logInfo('Voiceover stopped');
+      
+      // Restore background music volume if it was ducked
+      if (_backgroundMusicLoaded && _backgroundMusicPlayer.playing) {
+        await _fadeVolume(_backgroundMusicPlayer, null, 1.0, const Duration(milliseconds: 300));
+      }
+    } catch (e, stackTrace) {
+      logError('Failed to stop voiceover', e, stackTrace);
+    }
+  }
+
+  /// Stop all audio with fade-out
   @override
   Future<void> stopAll() async {
     if (!_isInitialized) return;
     
-    await _backgroundMusicPlayer.stop();
-    await _voiceoverPlayer.stop();
+    try {
+      // Fade out background music over 2 seconds
+      await _fadeVolume(_backgroundMusicPlayer, null, 0.0, const Duration(seconds: 2));
+      
+      // Stop both players
+      await _backgroundMusicPlayer.stop();
+      await _voiceoverPlayer.stop();
+      
+      logInfo('Successfully stopped all audio with fade-out');
+    } catch (e, stackTrace) {
+      logError('Failed to stop audio gracefully', e, stackTrace);
+      // Force stop if fade fails
+      await _backgroundMusicPlayer.stop();
+      await _voiceoverPlayer.stop();
+    }
   }
 
   /// Pause all audio
@@ -147,12 +219,72 @@ class AudioManager with LoggerMixin implements AudioService {
   Future<void> dispose() async {
     if (!_isInitialized) return;
     
+    // Cancel interruption subscription
+    await _interruptionSubscription?.cancel();
+    _interruptionSubscription = null;
+    
+    // Dispose players
     await _backgroundMusicPlayer.dispose();
     await _voiceoverPlayer.dispose();
     _isInitialized = false;
+    
+    logInfo('Audio manager disposed');
   }
 
   /// Check if audio is available
   @override
   bool get isAudioAvailable => _isInitialized && (_backgroundMusicLoaded || _voiceoversLoaded);
+  
+  /// Set up audio session interruption handling (phone calls, etc.)
+  void _setupAudioInterruptions() {
+    _interruptionSubscription = _audioSession.interruptionEventStream.listen(
+      (event) {
+        logInfo('Audio interruption: ${event.type}');
+        switch (event.type) {
+          case AudioInterruptionType.duck:
+            // Another app wants to play audio briefly (like notifications)
+            // Duck our volume temporarily
+            _fadeVolume(_backgroundMusicPlayer, null, 0.3, const Duration(milliseconds: 200));
+            break;
+          case AudioInterruptionType.pause:
+            // Another app wants to play audio (like phone calls)
+            pauseAll();
+            break;
+          case AudioInterruptionType.unknown:
+            break;
+        }
+      },
+      onError: (error) {
+        logWarning('Audio interruption stream error', error);
+      },
+    );
+  }
+  
+  /// Smoothly fade audio volume from current to target over duration
+  Future<void> _fadeVolume(
+    AudioPlayer player, 
+    double? fromVolume, 
+    double toVolume, 
+    Duration duration,
+  ) async {
+    try {
+      final currentVolume = fromVolume ?? player.volume;
+      final stepCount = 10;
+      final stepDuration = Duration(milliseconds: duration.inMilliseconds ~/ stepCount);
+      final volumeStep = (toVolume - currentVolume) / stepCount;
+      
+      for (int i = 1; i <= stepCount; i++) {
+        final newVolume = (currentVolume + (volumeStep * i)).clamp(0.0, 1.0);
+        await player.setVolume(newVolume);
+        await Future.delayed(stepDuration);
+      }
+      
+      // Ensure we end at exact target volume
+      await player.setVolume(toVolume);
+    } catch (e, stackTrace) {
+      logWarning('Volume fade failed', e, stackTrace);
+      // Fallback to direct volume set
+      await player.setVolume(toVolume);
+    }
+  }
 }

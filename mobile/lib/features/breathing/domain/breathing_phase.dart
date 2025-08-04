@@ -60,7 +60,7 @@ extension BreathingPhaseExtension on BreathingPhase {
       case BreathingPhase.inhale:
         return 'Inhale slowly for 5 seconds and fill your lungs.';
       case BreathingPhase.hold:
-        return 'Hold the breath for a while…';
+        return 'Hold in the breath for a while…';
       case BreathingPhase.exhale:
         return 'Exhale slowly for 5 seconds and empty your lungs.';
       case BreathingPhase.success:

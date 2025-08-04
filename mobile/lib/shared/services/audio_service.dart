@@ -10,6 +10,9 @@ abstract class AudioService {
   /// Play Oracle voiceover with volume ducking
   Future<void> playVoiceClip(String clipName);
 
+  /// Stop current voiceover only
+  Future<void> stopVoiceover();
+
   /// Stop all audio
   Future<void> stopAll();
 

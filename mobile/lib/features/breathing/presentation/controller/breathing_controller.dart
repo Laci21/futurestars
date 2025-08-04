@@ -67,14 +67,39 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
 
   final Ref _ref;
 
-  /// Start the breathing exercise
-  void startExercise() {
-    state = state.copyWith(
-      phase: BreathingPhase.intro,
-      countdown: 0,
-      elapsed: Duration.zero,
-      progress: 0.0,
-    );
+  /// Start the breathing exercise with audio
+  Future<void> startExercise() async {
+    try {
+      // Initialize and start audio
+      final audioService = _ref.read(audioServiceProvider);
+      await audioService.initialize();
+      await audioService.startBackgroundMusic();
+      
+      // Update state
+      state = state.copyWith(
+        phase: BreathingPhase.intro,
+        countdown: 0,
+        elapsed: Duration.zero,
+        progress: 0.0,
+        isAudioLoaded: audioService.isAudioAvailable,
+      );
+      
+      // Play intro voiceover (non-blocking)
+      _playPhaseAudio(BreathingPhase.intro);
+      
+      logInfo('Breathing exercise started with audio');
+    } catch (e, stackTrace) {
+      logWarning('Failed to start audio, continuing without', e, stackTrace);
+      
+      // Continue without audio if initialization fails
+      state = state.copyWith(
+        phase: BreathingPhase.intro,
+        countdown: 0,
+        elapsed: Duration.zero,
+        progress: 0.0,
+        isAudioLoaded: false,
+      );
+    }
   }
 
   /// Move to the next phase
@@ -82,6 +107,9 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
     final nextPhase = state.phase.nextPhase;
     if (nextPhase != null) {
       logInfo('Moving to next phase: ${nextPhase.displayName}');
+      
+      // Stop current voiceover before moving to next phase
+      stopCurrentVoiceover();
       
       // Haptic feedback on phase change
       _triggerPhaseHaptic(nextPhase);
@@ -94,20 +122,40 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
       );
 
       // Play Oracle voiceover for this phase
-      _playPhaseAudio(nextPhase);
+      if (nextPhase == BreathingPhase.success) {
+        // For success phase, play voiceover first, then stop background music
+        _playSuccessAudioSequence();
+      } else {
+        _playPhaseAudio(nextPhase);
+      }
     }
   }
 
-  /// Play audio for the current phase
-  Future<void> _playPhaseAudio(BreathingPhase phase) async {
-    try {
-      final audioService = _ref.read(audioServiceProvider);
-      if (audioService.isAudioAvailable) {
-        await audioService.playVoiceClip(phase.name);
-      }
-    } catch (e, stackTrace) {
-      logWarning('Failed to play audio for phase: ${phase.displayName}', e, stackTrace);
+  /// Play audio for the current phase (non-blocking)
+  void _playPhaseAudio(BreathingPhase phase) {
+    // Check if we're still in the correct phase before playing
+    // This prevents delayed intro audio from playing after the exercise is completed
+    if (state.phase != phase) {
+      return;
     }
+    
+    // Don't await - let voiceovers play independently of phase timing
+    Future.microtask(() async {
+      try {
+        // Double-check phase hasn't changed during async gap
+        if (state.phase != phase) {
+          return;
+        }
+        
+        final audioService = _ref.read(audioServiceProvider);
+        
+        if (audioService.isAudioAvailable) {
+          await audioService.playVoiceClip(phase.name);
+        }
+      } catch (e, stackTrace) {
+        logWarning('Failed to play audio for phase: ${phase.displayName}', e, stackTrace);
+      }
+    });
   }
 
   /// Trigger haptic feedback for phase changes
@@ -158,8 +206,16 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
     state = state.copyWith(isAudioLoaded: loaded);
   }
 
-  /// Reset to initial state
-  void reset() {
+  /// Reset to initial state and stop audio
+  Future<void> reset() async {
+    try {
+      // Stop all audio when resetting
+      final audioService = _ref.read(audioServiceProvider);
+      await audioService.stopAll();
+    } catch (e, stackTrace) {
+      logWarning('Failed to stop audio during reset', e, stackTrace);
+    }
+    
     state = const BreathingState(
       phase: BreathingPhase.intro,
       countdown: 0,
@@ -183,6 +239,78 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
       case BreathingPhase.success:
         return 1.0;
     }
+  }
+  
+  /// Stop current voiceover immediately
+  void stopCurrentVoiceover() {
+    Future.microtask(() async {
+      try {
+        final audioService = _ref.read(audioServiceProvider);
+        await audioService.stopVoiceover();
+      } catch (e, stackTrace) {
+        logWarning('Failed to stop current voiceover', e, stackTrace);
+      }
+    });
+  }
+
+  /// Initialize audio and auto-play intro voiceover
+  Future<void> initializeAudio() async {
+    // Prevent re-initialization
+    if (state.isAudioLoaded) {
+      return;
+    }
+    
+    try {
+      final audioService = _ref.read(audioServiceProvider);
+      await audioService.initialize();
+      
+      // Start background music asynchronously - don't let it block intro voiceover
+      Future.microtask(() async {
+        try {
+          await audioService.startBackgroundMusic();
+        } catch (e, stackTrace) {
+          logWarning('Background music failed to start', e, stackTrace);
+        }
+      });
+      
+      // Update state to show audio is loaded
+      state = state.copyWith(isAudioLoaded: audioService.isAudioAvailable);
+      
+      // Only play intro voiceover if audio is actually available and we're still in intro phase
+      if (audioService.isAudioAvailable && state.phase == BreathingPhase.intro) {
+        try {
+          // Wait a brief moment to ensure audio system is fully ready
+          await Future.delayed(const Duration(milliseconds: 100));
+          _playPhaseAudio(BreathingPhase.intro);
+        } catch (e, stackTrace) {
+          logError('Failed to auto-play intro voiceover', e, stackTrace);
+        }
+      }
+    } catch (e, stackTrace) {
+      logWarning('Failed to initialize audio', e, stackTrace);
+      state = state.copyWith(isAudioLoaded: false);
+    }
+  }
+
+  /// Play success voiceover sequence, then stop background music
+  void _playSuccessAudioSequence() {
+    // Use unawaited to avoid blocking the UI, but play voiceover first
+    Future.microtask(() async {
+      try {
+        final audioService = _ref.read(audioServiceProvider);
+        
+        // First, play the success voiceover and wait for it to complete
+        if (audioService.isAudioAvailable) {
+          await audioService.playVoiceClip('success');
+        }
+        
+        // Then stop all audio with fade-out
+        await audioService.stopAll();
+        logInfo('Successfully played success voiceover and faded out audio');
+      } catch (e, stackTrace) {
+        logWarning('Failed to complete success audio sequence', e, stackTrace);
+      }
+    });
   }
 }
 

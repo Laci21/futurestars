@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+
 import '../controller/breathing_controller.dart';
 import '../controller/breathing_animation_controller.dart';
 import '../widgets/breathing_bubble.dart';
@@ -10,6 +10,7 @@ import '../widgets/gradient_background.dart';
 import '../widgets/sound_wave_widget.dart';
 import '../widgets/responsive_text.dart';
 import '../../domain/breathing_phase.dart';
+import '../../../../shared/providers/audio_provider.dart';
 
 /// Single screen for the entire breathing exercise experience
 /// Content changes dynamically based on the current breathing phase
@@ -21,7 +22,7 @@ class BreathingExerciseScreen extends ConsumerStatefulWidget {
 }
 
 class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScreen> 
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   late BreathingAnimationController _animationController;
 
   @override
@@ -32,23 +33,50 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
     // Listen for animation completion to handle auto-progression
     _animationController.master.addStatusListener(_onAnimationStatusChanged);
     _animationController.master.addListener(_onAnimationProgressChanged);
+    
+    // Register for app lifecycle changes to handle audio interruptions
+    WidgetsBinding.instance.addObserver(this);
+    
+    // Auto-initialize audio and play intro voiceover when screen loads
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(breathingControllerProvider.notifier).initializeAudio();
+    });
   }
 
   @override
   void dispose() {
+    // Remove lifecycle observer
+    WidgetsBinding.instance.removeObserver(this);
+    
+    // Clean up animation listeners
     _animationController.master.removeStatusListener(_onAnimationStatusChanged);
     _animationController.master.removeListener(_onAnimationProgressChanged);
     _animationController.dispose();
+    
     super.dispose();
   }
 
   void _onAnimationProgressChanged() {
-    // Check if animation has reached success phase (0.8+ progress)
     final animationPhase = _animationController.getCurrentPhase();
     final currentStatePhase = ref.read(breathingControllerProvider).phase;
     
-    // Transition to success when animation reaches success phase
-    if (animationPhase == 'success' && currentStatePhase != BreathingPhase.success) {
+    // Auto-progress through breathing phases based on animation timing
+    // But skip intro phase - that should be user-controlled
+    if (currentStatePhase == BreathingPhase.intro) {
+      // Don't auto-progress from intro - wait for user interaction
+      return;
+    }
+    
+    // Sync animation phases with state phases
+    final shouldTransition = switch (animationPhase) {
+      'inhale' when currentStatePhase == BreathingPhase.intro => true,
+      'hold' when currentStatePhase == BreathingPhase.inhale => true,
+      'exhale' when currentStatePhase == BreathingPhase.hold => true,
+      'success' when currentStatePhase == BreathingPhase.exhale => true,
+      _ => false,
+    };
+    
+    if (shouldTransition) {
       ref.read(breathingControllerProvider.notifier).nextPhase();
     }
   }
@@ -172,7 +200,7 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
               children: [
                 // CTA label above button
                 Text(
-                  'Start the Breath Exercise',
+                  'Begin Breathing',
                   style: ResponsiveTextStyles.ctaLabel,
                   textAlign: TextAlign.center,
                 ),
@@ -373,33 +401,6 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
     }
   }
 
-  Widget _buildPhaseInstructions(String phase) {
-    String instruction;
-    switch (phase) {
-      case 'inhale':
-        instruction = 'Inhale slowly for 5 seconds\nand fill your lungs.';
-        break;
-      case 'hold':
-        instruction = 'Hold the breath for a while...';
-        break;
-      case 'exhale':
-        instruction = 'Exhale slowly for 5 seconds\nand empty your lungs.';
-        break;
-      default:
-        instruction = 'Follow the breathing instructions.';
-    }
-
-    return Text(
-      instruction,
-      textAlign: TextAlign.center,
-      style: const TextStyle(
-        fontSize: 18,
-        color: Colors.white,
-        height: 1.4,
-      ),
-    );
-  }
-
   Widget _buildSuccessContent() {
     return Center(
       child: Container(
@@ -490,8 +491,44 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
   }
 
   void _startBreathingExercise() {
-    // Move to next phase (inhale) and start animation
-    ref.read(breathingControllerProvider.notifier).nextPhase();
+    // Always stop intro voiceover immediately and start breathing sequence
+    final controller = ref.read(breathingControllerProvider.notifier);
+    
+    // Stop intro voiceover immediately
+    controller.stopCurrentVoiceover();
+    
+    // Start the breathing sequence (move to inhale phase)
+    controller.nextPhase();
+    
     _animationController.start();
+  }
+  
+  /// Handle app lifecycle changes for audio management
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    final audioService = ref.read(audioServiceProvider);
+    
+    switch (state) {
+      case AppLifecycleState.paused:
+        // App went to background - pause audio
+        audioService.pauseAll();
+        _animationController.pause();
+        break;
+      case AppLifecycleState.resumed:
+        // App came back to foreground - resume audio if we're in an active phase
+        final currentPhase = ref.read(breathingControllerProvider).phase;
+        if (currentPhase != BreathingPhase.intro && currentPhase != BreathingPhase.success) {
+          audioService.resumeAll();
+          _animationController.resume();
+        }
+        break;
+      case AppLifecycleState.detached:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        // Handle other states if needed
+        break;
+    }
   }
 }
