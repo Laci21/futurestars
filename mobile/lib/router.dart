@@ -5,6 +5,7 @@ import 'features/breathing/presentation/controller/breathing_controller.dart';
 import 'features/breathing/presentation/controller/breathing_animation_controller.dart';
 import 'features/breathing/presentation/widgets/breathing_bubble.dart';
 import 'features/breathing/presentation/widgets/progress_line.dart';
+import 'features/breathing/presentation/screens/breathing_exercise_screen.dart';
 import 'features/breathing/domain/breathing_phase.dart';
 
 // Test screen for breathing bubble component
@@ -186,8 +187,14 @@ class _BreathingPlaceholderScreenState extends ConsumerState<BreathingPlaceholde
 /// App router configuration using go_router
 /// Defines all navigation routes for the breathing exercise
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/intro',
+  initialLocation: '/breathing-exercise',
   routes: [
+    // New Breathing Exercise Screen (single screen, dynamic content)
+    GoRoute(
+      path: '/breathing-exercise',
+      name: 'breathing-exercise',
+      builder: (context, state) => const BreathingExerciseScreen(),
+    ),
     // Breathing Exercise Routes
     GoRoute(
       path: '/intro',
