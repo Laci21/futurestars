@@ -10,6 +10,15 @@ void main() {
     DeviceOrientation.portraitUp,
   ]);
   
+  // Set light status bar for dark background
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+    ),
+  );
+  
   runApp(
     // Wrap entire app in ProviderScope for Riverpod state management
     const ProviderScope(

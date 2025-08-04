@@ -24,27 +24,27 @@ class GradientBackground extends StatelessWidget {
       width: double.infinity,
       height: double.infinity,
       decoration: const BoxDecoration(
-        // Main gradient matching the design - deep blue to purple/pink
+        // Main gradient matching the design exactly
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF1A1D4A), // Deep blue at top
-            Color(0xFF2D3561), // Medium blue
-            Color(0xFF3D4A7A), // Lighter blue
-            Color(0xFF4A5B8C), // Blue-purple transition
-            Color(0xFF5D6B9E), // Purple-blue
-            Color(0xFF6B7AAF), // Light purple
-            Color(0xFF7B89BF), // Purple-pink
-            Color(0xFF8B98CF), // Light purple-pink
+            Color(0xFF4A5BB8), // Much brighter blue-purple top like design
+            Color(0xFF3D4AA0), // Bright mid-blue
+            Color(0xFF2E3770), // Medium blue
+            Color(0xFF1A1D4A), // Darker blue
+            Color(0xFF0B0E2A), // Very dark bottom
           ],
-          stops: [0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1.0],
+          stops: [0.0, 0.25, 0.5, 0.75, 1.0],
         ),
       ),
       child: Stack(
         children: [
           // Scenic overlay with atmospheric elements
           _buildScenicOverlay(),
+          
+          // Overlay mask for better text contrast
+          _buildOverlayMask(),
           
           // Optional child content on top
           if (child != null) child!,
@@ -148,6 +148,28 @@ class GradientBackground extends StatelessWidget {
       ],
     );
   }
+
+  /// Build overlay mask for better text contrast (fades illustration behind text areas)
+  Widget _buildOverlayMask() {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.transparent, // No overlay at top (progress indicator area)
+            const Color(0xFF2A3572).withOpacity(0.3), // Light overlay for text area
+            const Color(0xFF1A1D4A).withOpacity(0.5), // Medium overlay for center text
+            const Color(0xFF0F1438).withOpacity(0.3), // Light overlay for CTA area
+            Colors.transparent, // Clear at bottom (keep illustration visible)
+          ],
+          stops: [0.0, 0.2, 0.5, 0.8, 1.0],
+        ),
+      ),
+    );
+  }
 }
 
 /// Custom painter for left side tree silhouettes
@@ -234,39 +256,76 @@ class _GazeboPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
     
     final lightPaint = Paint()
-      ..color = const Color(0xFF1A1D4A).withOpacity(0.6)
+      ..color = const Color(0xFF1A1D4A).withOpacity(0.7)
       ..style = PaintingStyle.fill;
 
-    // Gazebo roof (circular/oval)
-    final roofRect = Rect.fromCenter(
-      center: Offset(size.width / 2, size.height * 0.3),
-      width: size.width * 0.8,
-      height: size.height * 0.4,
-    );
-    canvas.drawOval(roofRect, darkPaint);
+    final roofPaint = Paint()
+      ..color = const Color(0xFF0F1438).withOpacity(0.8)
+      ..style = PaintingStyle.fill;
 
-    // Gazebo pillars/supports
-    final pillarWidth = 8.0;
-    final pillarHeight = size.height * 0.6;
+    // Gazebo base/platform (wider rectangular base)
+    final baseRect = Rect.fromCenter(
+      center: Offset(size.width / 2, size.height * 0.85),
+      width: size.width * 0.9,
+      height: size.height * 0.2,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(baseRect, const Radius.circular(8)),
+      lightPaint,
+    );
+
+    // Gazebo roof (more architectural, peaked)
+    final roofPath = Path();
+    roofPath.moveTo(size.width * 0.1, size.height * 0.4);
+    roofPath.lineTo(size.width * 0.5, size.height * 0.1); // Peak
+    roofPath.lineTo(size.width * 0.9, size.height * 0.4);
+    roofPath.lineTo(size.width * 0.8, size.height * 0.5);
+    roofPath.lineTo(size.width * 0.2, size.height * 0.5);
+    roofPath.close();
+    canvas.drawPath(roofPath, roofPaint);
+
+    // Gazebo pillars/supports (more architectural)
+    final pillarWidth = 6.0;
+    final pillarHeight = size.height * 0.4;
     
     // Left pillar
-    canvas.drawRect(
-      Rect.fromLTWH(
-        size.width * 0.25 - pillarWidth / 2,
-        size.height * 0.4,
-        pillarWidth,
-        pillarHeight,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          size.width * 0.3 - pillarWidth / 2,
+          size.height * 0.5,
+          pillarWidth,
+          pillarHeight,
+        ),
+        const Radius.circular(2),
       ),
       lightPaint,
     );
     
     // Right pillar
-    canvas.drawRect(
-      Rect.fromLTWH(
-        size.width * 0.75 - pillarWidth / 2,
-        size.height * 0.4,
-        pillarWidth,
-        pillarHeight,
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          size.width * 0.7 - pillarWidth / 2,
+          size.height * 0.5,
+          pillarWidth,
+          pillarHeight,
+        ),
+        const Radius.circular(2),
+      ),
+      lightPaint,
+    );
+
+    // Center pillar for more structure
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(
+          size.width * 0.5 - pillarWidth / 2,
+          size.height * 0.5,
+          pillarWidth,
+          pillarHeight,
+        ),
+        const Radius.circular(2),
       ),
       lightPaint,
     );

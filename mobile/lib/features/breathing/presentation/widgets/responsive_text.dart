@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// Responsive text widget that scales typography for different screen sizes
 /// Phone-first design that works beautifully on tablets too
@@ -104,35 +105,52 @@ class ResponsiveText extends StatelessWidget {
 /// Flutter Learning: Create reusable style constants for consistency
 class ResponsiveTextStyles {
   // Main heading for intro/success screens
-  static const TextStyle heading = TextStyle(
+  static TextStyle get heading => GoogleFonts.nunito(
     fontSize: 24,
-    fontWeight: FontWeight.w600,
+    fontWeight: FontWeight.w600, // Semibold
     color: Colors.white,
     height: 1.2,
+    letterSpacing: -0.24, // -1% tracking as per design
   );
 
   // Secondary heading for phase instructions
-  static const TextStyle subheading = TextStyle(
+  static TextStyle get subheading => GoogleFonts.nunito(
     fontSize: 18,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w500, // Medium
     color: Colors.white,
     height: 1.3,
   );
 
   // Body text for descriptions
-  static const TextStyle body = TextStyle(
+  static TextStyle get body => GoogleFonts.nunito(
     fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: Colors.white,
-    height: 1.4,
+    fontWeight: FontWeight.w400, // Regular
+    color: Colors.white.withOpacity(0.8), // 80% opacity as per design
+    height: 1.5, // Increased line height for better readability
   );
 
   // Small text for disclaimers/hints
-  static const TextStyle caption = TextStyle(
+  static TextStyle get caption => GoogleFonts.nunito(
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    color: Colors.white70,
+    color: Colors.white.withOpacity(0.7),
     height: 1.3,
+  );
+
+  // Episode label style
+  static TextStyle get episodeLabel => GoogleFonts.nunito(
+    fontSize: 14,
+    fontWeight: FontWeight.w500, // Medium
+    color: Colors.white.withOpacity(0.35), // Even more grey to match intro.png precisely
+    letterSpacing: 0.5,
+  );
+
+  // CTA label style
+  static TextStyle get ctaLabel => GoogleFonts.nunito(
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    color: Colors.white.withOpacity(0.5), // Lower opacity to match design
+    height: 1.4,
   );
 
   // Phase labels inside breathing bubble
@@ -202,14 +220,48 @@ class ResponsiveTextWidgets {
   static Widget button(String text) {
     return ResponsiveText(
       text,
-      style: const TextStyle(
+      style: GoogleFonts.nunito(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: Colors.white,
+        color: const Color(0xFF1A1D4A), // Dark text on yellow button
       ),
       textAlign: TextAlign.center,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  /// Special intro heading with highlighted "breathe" word
+  static Widget introHeading() {
+    return RichText(
+      textAlign: TextAlign.left,
+      text: TextSpan(
+        style: ResponsiveTextStyles.heading.copyWith(
+          fontWeight: FontWeight.w600, // Semibold as per design
+          letterSpacing: -0.24, // -1% tracking
+        ),
+        children: [
+          const TextSpan(text: 'Take a moment to '),
+          TextSpan(
+            text: 'breathe',
+            style: ResponsiveTextStyles.heading.copyWith(
+              color: const Color(0xFFAEAFFC).withOpacity(0.8), // Correct opacity
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.24,
+            ),
+          ),
+          const TextSpan(text: ',\ntransform each inhale into power'),
+        ],
+      ),
+    );
+  }
+
+  /// Special intro subtitle with proper line breaks
+  static Widget introSubtitle() {
+    return Text(
+      'Your breath is a bridge between\nchallenge and tranquility',
+      style: ResponsiveTextStyles.body,
+      textAlign: TextAlign.left,
     );
   }
 }

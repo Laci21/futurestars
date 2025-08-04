@@ -8,6 +8,7 @@ import '../widgets/progress_line.dart';
 import '../widgets/oracle_avatar.dart';
 import '../widgets/gradient_background.dart';
 import '../widgets/sound_wave_widget.dart';
+import '../widgets/responsive_text.dart';
 import '../../domain/breathing_phase.dart';
 
 /// Single screen for the entire breathing exercise experience
@@ -30,22 +31,33 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
     
     // Listen for animation completion to handle auto-progression
     _animationController.master.addStatusListener(_onAnimationStatusChanged);
+    _animationController.master.addListener(_onAnimationProgressChanged);
   }
 
   @override
   void dispose() {
     _animationController.master.removeStatusListener(_onAnimationStatusChanged);
+    _animationController.master.removeListener(_onAnimationProgressChanged);
     _animationController.dispose();
     super.dispose();
   }
 
+  void _onAnimationProgressChanged() {
+    // Check if animation has reached success phase (0.8+ progress)
+    final animationPhase = _animationController.getCurrentPhase();
+    final currentStatePhase = ref.read(breathingControllerProvider).phase;
+    
+    // Transition to success when animation reaches success phase
+    if (animationPhase == 'success' && currentStatePhase != BreathingPhase.success) {
+      ref.read(breathingControllerProvider.notifier).nextPhase();
+    }
+  }
+
   void _onAnimationStatusChanged(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
-      // Animation completed - auto-advance to success phase
-      // Note: The animation controller handles the breathing sequence automatically
-      // This transitions from the final exhale phase to success
-      final currentPhase = ref.read(breathingControllerProvider).phase;
-      if (currentPhase == BreathingPhase.exhale) {
+      // Ensure we're in success phase when animation completes
+      final currentStatePhase = ref.read(breathingControllerProvider).phase;
+      if (currentStatePhase != BreathingPhase.success) {
         ref.read(breathingControllerProvider.notifier).nextPhase();
       }
     }
@@ -88,181 +100,277 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
   }
 
   Widget _buildIntroContent() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          // Oracle avatar with message (design shows Oracle + speech bubble)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const OracleAvatar(size: 60),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Take a moment to breathe, transform each inhale into power',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Your breath is a bridge between challenge and tranquility',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.8),
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 120),
-          
-          // NO breathing bubble on intro screen (per design)
-          // Design shows only Oracle + message + button
-          
-          // Start button with rounded design matching design
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
-                color: const Color(0xFFFFD700), // Gold border
-                width: 2,
-              ),
-            ),
-            child: ElevatedButton(
-              onPressed: _startBreathingExercise,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+                          // Oracle avatar with text layout per design - avatar only left to first line
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Start the Breath Exercise',
-                    style: TextStyle(
-                      fontSize: 16,
+                  // First row: Oracle avatar left, only first line of text right
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                    const OracleAvatar(size: 50),
+                    const SizedBox(width: 16),
+                    
+                    // Only first line with "breathe" highlight
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            style: ResponsiveTextStyles.heading.copyWith(
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.24,
+                            ),
+                            children: [
+                              const TextSpan(text: 'Take a moment to '),
+                              TextSpan(
+                                text: 'breathe',
+                                style: ResponsiveTextStyles.heading.copyWith(
+                                  color: const Color(0xFFAEAFFC).withOpacity(0.8),
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: -0.24,
+                                ),
+                              ),
+                              const TextSpan(text: ','),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Second line below avatar (centered)
+                  Text(
+                    'transform each inhale into power',
+                    textAlign: TextAlign.center,
+                    style: ResponsiveTextStyles.heading.copyWith(
                       fontWeight: FontWeight.w600,
+                      letterSpacing: -0.24,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.arrow_forward,
-                    color: const Color(0xFFFFD700), // Gold arrow
-                    size: 20,
-                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Subtitle below everything
+                  ResponsiveTextWidgets.introSubtitle(),
                 ],
               ),
+            
+            const Spacer(), // Flexible space before CTA
+            
+            // CTA section with label and circular button (matching design)
+            Column(
+              children: [
+                // CTA label above button
+                Text(
+                  'Start the Breath Exercise',
+                  style: ResponsiveTextStyles.ctaLabel,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                
+                // Circular button with arrow (matching design)
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF1F2951), // Darker navy to match design precisely
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0F1438).withOpacity(0.8),
+                        blurRadius: 16,
+                        spreadRadius: 2,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: _startBreathingExercise,
+                      borderRadius: BorderRadius.circular(28),
+                                              child: const Center(
+                          child: Icon(
+                            Icons.arrow_forward,
+                            color: Color(0xFFFFD700), // Bright gold to match progress line
+                            size: 24, // 24px as per design
+                          ),
+                        ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
+            
+            const SizedBox(height: 56), // Bottom spacing
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildBreathingContent() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Oracle avatar with instruction speech bubble (per design)
-          AnimatedBuilder(
-            animation: _animationController.master,
-            builder: (context, child) {
-              final currentPhase = _animationController.getCurrentPhase();
-              return _buildOracleInstructionBubble(currentPhase);
-            },
-          ),
-          
-          // Sound waves above the bubble (animated during breathing)
-          AnimatedBuilder(
-            animation: _animationController.master,
-            builder: (context, child) {
-              final isAnimating = _animationController.master.isAnimating;
-              return SoundWaveWidget(
-                isAnimating: isAnimating,
-                barCount: 15,
-                maxHeight: 30,
-                color: const Color(0xFFE8F8FF).withOpacity(0.8),
-              );
-            },
-          ),
-          
-          // Animated breathing bubble (handles all phases automatically)
-          BreathingBubble(
-            animationController: _animationController,
-            currentPhase: _animationController.getCurrentPhase(),
-          ),
-          
-          // Fixed bottom instruction text (per design)
-          const Text(
-            'Follow the breathing instructions',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white54,
-              height: 1.4,
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Oracle avatar with instruction speech bubble (per design)
+            AnimatedBuilder(
+              animation: _animationController.master,
+              builder: (context, child) {
+                final currentPhase = _animationController.getCurrentPhase();
+                return _buildOracleInstructionBubble(currentPhase);
+              },
             ),
-          ),
-        ],
+            
+            // Sound waves above the bubble (animated during breathing)
+            AnimatedBuilder(
+              animation: _animationController.master,
+              builder: (context, child) {
+                final isAnimating = _animationController.master.isAnimating;
+                return SoundWaveWidget(
+                  isAnimating: isAnimating,
+                  barCount: 15,
+                  maxHeight: 30,
+                  color: const Color(0xFF87CEEB).withOpacity(0.4), // Blue tint as per inhale.png
+                );
+              },
+            ),
+            
+            const SizedBox(height: 24), // Space between sound waves and bubble
+            
+            // Animated breathing bubble (handles all phases automatically)
+            BreathingBubble(
+              animationController: _animationController,
+              currentPhase: _animationController.getCurrentPhase(),
+            ),
+            
+            // Add flexible space to push helper text to bottom
+            const Spacer(),
+            
+                          // Helper text at bottom of screen
+              Padding(
+                padding: const EdgeInsets.only(bottom: 40),
+                child: Text(
+                  'Follow the breathing instructions',
+                  textAlign: TextAlign.center,
+                  style: ResponsiveTextStyles.body.copyWith(
+                    color: Colors.white.withOpacity(0.35), // Same opacity as episode label
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
 
   /// Build Oracle avatar with instruction speech bubble for breathing phases
   Widget _buildOracleInstructionBubble(String phase) {
-    String instruction;
-    switch (phase) {
-      case 'inhale':
-        instruction = 'Inhale slowly for 5 seconds and fill your lungs';
-        break;
-      case 'hold':
-        instruction = 'Hold in the breath for a while...';
-        break;
-      case 'exhale':
-        instruction = 'Exhale slowly for 5 seconds and empty your lungs';
-        break;
-      default:
-        instruction = 'Follow the breathing instructions';
-    }
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Oracle avatar on the left
         const OracleAvatar(size: 50),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
+        
+        // Instruction text on the right with colored words
         Expanded(
-          child: Text(
-            instruction,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
-              height: 1.4,
-            ),
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8), // Align with avatar
+            child: _buildColoredInstruction(phase),
           ),
         ),
       ],
     );
+  }
+
+  /// Build instruction text with colored keywords
+  Widget _buildColoredInstruction(String phase) {
+    const lavenderColor = Color(0xFFAEAFFC); // Same as "breathe" highlight
+    
+    switch (phase) {
+      case 'inhale':
+        return RichText(
+          text: TextSpan(
+            style: ResponsiveTextStyles.subheading,
+            children: [
+              TextSpan(
+                text: 'Inhale',
+                style: ResponsiveTextStyles.subheading.copyWith(
+                  color: lavenderColor, // Same lavender as "breathe"
+                ),
+              ),
+              const TextSpan(text: ' slowly for '),
+              TextSpan(
+                text: '5 seconds',
+                style: ResponsiveTextStyles.subheading.copyWith(
+                  color: lavenderColor, // Same lavender as "breathe"
+                ),
+              ),
+              const TextSpan(text: ' and fill your lungs'),
+            ],
+          ),
+        );
+      case 'hold':
+        return RichText(
+          text: TextSpan(
+            style: ResponsiveTextStyles.subheading,
+            children: [
+              TextSpan(
+                text: 'Hold in',
+                style: ResponsiveTextStyles.subheading.copyWith(
+                  color: lavenderColor, // Same lavender as "breathe"
+                ),
+              ),
+              const TextSpan(text: ' the breath for a while...'),
+            ],
+          ),
+        );
+      case 'exhale':
+        return RichText(
+          text: TextSpan(
+            style: ResponsiveTextStyles.subheading,
+            children: [
+              TextSpan(
+                text: 'Exhale',
+                style: ResponsiveTextStyles.subheading.copyWith(
+                  color: lavenderColor, // Same lavender as "breathe"
+                ),
+              ),
+              const TextSpan(text: ' slowly for '),
+              TextSpan(
+                text: '5 seconds',
+                style: ResponsiveTextStyles.subheading.copyWith(
+                  color: lavenderColor, // Same lavender as "breathe"
+                ),
+              ),
+              const TextSpan(text: ' and empty your lungs'),
+            ],
+          ),
+        );
+      default:
+        return Text(
+          'Follow the breathing instructions',
+          style: ResponsiveTextStyles.subheading,
+        );
+    }
   }
 
   Widget _buildPhaseInstructions(String phase) {
@@ -293,80 +401,90 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
   }
 
   Widget _buildSuccessContent() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          // Oracle avatar with success message (per design)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const OracleAvatar(size: 50),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return Center(
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 400),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 40), // Top spacing to match other screens
+            // Oracle avatar with success message (per success1.png and success2.png)
+            Column(
+              children: [
+                // First row: Oracle avatar left, "Fantastic job!" right
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Fantastic job!',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Your breath is your superpower, offering strength and calm.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                        height: 1.4,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Trust it to guide you and empower your journey ahead.',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                        height: 1.4,
+                    const OracleAvatar(size: 50),
+                    const SizedBox(width: 16),
+                    
+                    // Only first line next to avatar
+                    Expanded(
+                      child: Text(
+                        'Fantastic job!',
+                        style: ResponsiveTextStyles.heading,
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          
-          // NO sound waves on success screen (per design)
-          // Success breathing bubble (checkmark)
-          BreathingBubble(
-            animationController: _animationController,
-            currentPhase: 'success',
-          ),
-          
-          // Green circular continue button (per success2.png design)
-          Container(
-            width: 80,
-            height: 80,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF00D4AA), // Green/teal color from design
+                
+                const SizedBox(height: 8),
+                
+                // Rest of text below avatar (centered)
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: ResponsiveTextStyles.body,
+                    children: [
+                      TextSpan(
+                        text: 'Your breath is your superpower',
+                        style: ResponsiveTextStyles.body.copyWith(
+                          color: const Color(0xFFAEAFFC).withOpacity(0.8), // Same purple as "breathe"
+                        ),
+                      ),
+                      const TextSpan(text: ',\noffering strength and calm.'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Trust it to guide you and\nempower your journey ahead.',
+                  textAlign: TextAlign.center,
+                  style: ResponsiveTextStyles.body,
+                ),
+              ],
             ),
-            child: IconButton(
-              onPressed: () => context.go('/episode3-placeholder'),
-              icon: const Icon(
-                Icons.refresh,
+            
+            const SizedBox(height: 16),
+            
+            // Success green icon (hand gesture like design)
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF00D968), // Bright vibrant green to match design
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00D968).withOpacity(0.4),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.thumb_up,
+                size: 40,
                 color: Colors.white,
-                size: 36,
               ),
             ),
-          ),
-        ],
+            
+            const SizedBox(height: 24), // Bottom spacing
+          ],
+        ),
       ),
     );
   }

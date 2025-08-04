@@ -50,9 +50,9 @@ class OracleAvatar extends StatelessWidget {
             // Background gradient for the avatar
             gradient: RadialGradient(
               colors: [
-                Color(0xFF7B89BF), // Light purple center
-                Color(0xFF5D6B9E), // Medium purple
-                Color(0xFF4A5B8C), // Darker purple edge
+                Color(0xFF9B7CE6), // Brighter purple center to match design
+                Color(0xFF7B5FE0), // Medium bright purple
+                Color(0xFF5A4BCC), // Deeper purple edge
               ],
               stops: [0.0, 0.7, 1.0],
             ),

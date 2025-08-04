@@ -35,6 +35,16 @@ class BreathingBubble extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
+                // Background circle behind everything
+                Container(
+                  width: 320,
+                  height: 320,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF1A1D4A).withOpacity(0.3), // Dark blue background circle
+                  ),
+                ),
+                
                 // Outer circles for all timed phases (inhale, hold, exhale)
                 if (_shouldShowOuterCircles(currentPhase)) ..._buildOuterCircles(middleScale, currentPhase),
                 
@@ -46,18 +56,24 @@ class BreathingBubble extends StatelessWidget {
                     height: 200,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const RadialGradient(
-                        colors: [
-                          Color(0xFFE8F8FF), // Light cyan center
-                          Color(0xFFB8E6FF), // Slightly more cyan
-                          Color(0xFF87CEEB), // Sky blue edge
+                      gradient: RadialGradient(
+                        colors: currentPhase == 'success' ? [
+                          const Color(0xFFE8FFF8), // Light green center for success
+                          const Color(0xFFB8FFE6), // Green-cyan
+                          const Color(0xFF87CEBB), // Light green edge
+                        ] : [
+                          const Color(0xFFF0F8FF), // Very light cyan center
+                          const Color(0xFFD1E7FF), // Light blue
+                          const Color(0xFFADD8E6), // Light blue edge
                         ],
-                        stops: [0.0, 0.7, 1.0],
+                        stops: const [0.0, 0.7, 1.0],
                       ),
                       boxShadow: [
-                        // Subtle glow like in design - much reduced
+                        // Different glow color for success
                         BoxShadow(
-                          color: const Color(0xFF87CEEB).withOpacity(0.3),
+                          color: currentPhase == 'success' 
+                            ? const Color(0xFF00C853).withOpacity(0.4) // Green glow for success
+                            : const Color(0xFF87CEEB).withOpacity(0.3), // Default blue glow
                           blurRadius: 15,
                           spreadRadius: 3,
                         ),
@@ -137,15 +153,19 @@ class BreathingBubble extends StatelessWidget {
         Icon(
           _getPhaseIcon(phase),
           size: 60,
-          color: const Color(0xFF1A1D29),
+          color: phase == 'success' 
+            ? const Color(0xFF00C853) // Green for success checkmark
+            : const Color(0xFF1A1D29),
         ),
         const SizedBox(height: 8),
         Text(
           phase.toUpperCase(),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: Color(0xFF1A1D29),
+            color: phase == 'success' 
+              ? const Color(0xFF00C853) // Green for success text
+              : const Color(0xFF1A1D29),
             letterSpacing: 1.2,
           ),
         ),

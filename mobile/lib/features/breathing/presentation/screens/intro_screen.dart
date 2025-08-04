@@ -67,54 +67,77 @@ class _IntroScreenState extends State<IntroScreen>
               const BreathingProgressLine(),
               
               Expanded(
-                child: Padding(
-                  padding: context.responsivePadding,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Oracle avatar
-                      const OracleAvatar(size: 80),
+                child: Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 400), // Max width for centering on wide screens
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                      // Oracle avatar with proper sizing
+                      const OracleAvatar(size: 50),
                       
-                      SizedBox(height: context.responsiveSpacing * 2),
+                      const SizedBox(height: 24), // 24px gap as per design
                       
-                      // Welcome text
-                      ResponsiveTextWidgets.heading(
-                        'Take some moment to breathe, transform each inhale into power',
-                      ),
+                      // Welcome text with lavender highlight on "breathe"
+                      ResponsiveTextWidgets.introHeading(),
                       
-                      SizedBox(height: context.responsiveSpacing),
+                      const SizedBox(height: 32), // 32px gap as per design
                       
-                      // Subtitle
-                      ResponsiveTextWidgets.body(
-                        'Your breath is a bridge between challenge and tranquility',
-                      ),
+                      // Subtitle with proper line breaks
+                      ResponsiveTextWidgets.introSubtitle(),
                       
-                      SizedBox(height: context.responsiveSpacing * 3),
+                      const Spacer(), // Flexible space before CTA
                       
-                      // Start button
-                      ElevatedButton(
-                        onPressed: _startBreathingExercise,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFD700),
-                          foregroundColor: const Color(0xFF1A1D4A),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 48,
-                            vertical: 16,
+                      // CTA section with label and circular button
+                      Column(
+                        children: [
+                          // CTA label above button
+                          Text(
+                            'Start the Breath Exercise',
+                            style: ResponsiveTextStyles.ctaLabel,
+                            textAlign: TextAlign.center,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                          const SizedBox(height: 16),
+                          
+                          // Circular button with arrow (larger for better touch target)
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF1A1D4A), // Navy background
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF1A1D4A).withOpacity(0.4),
+                                  blurRadius: 8,
+                                  spreadRadius: 0,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: _startBreathingExercise,
+                                borderRadius: BorderRadius.circular(28),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.arrow_forward,
+                                    color: Color(0xFFFFD54F), // Yellow arrow
+                                    size: 24, // 24px as per design
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ResponsiveTextWidgets.button('Start the Breath Exercise'),
-                            const SizedBox(width: 8),
-                            const Icon(Icons.arrow_forward, size: 20),
-                          ],
-                        ),
+                        ],
                       ),
-                    ],
+                      
+                      const SizedBox(height: 56), // Bottom inset as per design
+                      ],
+                    ),
                   ),
                 ),
               ),
