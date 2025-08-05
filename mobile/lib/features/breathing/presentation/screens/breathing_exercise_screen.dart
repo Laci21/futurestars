@@ -302,9 +302,11 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                 final isAnimating = _animationController.master.isAnimating;
                 return SoundWaveWidget(
                   isAnimating: isAnimating,
-                  barCount: 15,
-                  maxHeight: 30,
-                  color: const Color(0xFF87CEEB).withOpacity(0.4), // Blue tint as per inhale.png
+                  barCount: 25, // More bars for wider appearance
+                  maxHeight: 24, // Slightly shorter
+                  barWidth: 2.5, // Slightly thinner bars
+                  spacing: 3.0, // Tighter spacing
+                  color: const Color(0xFF9BB4FF).withOpacity(0.9), // More blue-purple like design
                 );
               },
             ),
