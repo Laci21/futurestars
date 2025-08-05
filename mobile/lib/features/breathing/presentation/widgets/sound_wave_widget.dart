@@ -136,9 +136,7 @@ class _SoundWaveWidgetState extends State<SoundWaveWidget>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
-        children: List.generate(widget.barCount, (index) {
-          return _buildAnimatedBar(index);
-        }),
+        children: List.generate(widget.barCount, _buildAnimatedBar),
       ),
     );
   }

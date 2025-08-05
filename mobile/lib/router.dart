@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'features/breathing/presentation/screens/breathing_exercise_screen.dart';
-import 'features/breathing/presentation/screens/episode3_placeholder_screen.dart';
+import 'package:mobile/features/breathing/presentation/screens/breathing_exercise_screen.dart';
+import 'package:mobile/features/breathing/presentation/screens/episode3_placeholder_screen.dart';
 
 
 

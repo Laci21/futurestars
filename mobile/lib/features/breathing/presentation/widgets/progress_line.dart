@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'responsive_text.dart';
+import 'package:mobile/features/breathing/presentation/widgets/responsive_text.dart';
 
 /// Episode progress lines exactly matching the design
 /// Shows dashed lines with specified episode as active yellow line

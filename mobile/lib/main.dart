@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'router.dart';
+import 'package:mobile/router.dart';
 
 void main() {
   // Lock orientation to portrait only
@@ -38,7 +38,6 @@ class BreathingExerciseApp extends StatelessWidget {
         // Light mode only for V1
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF4A90E2), // Blue theme matching designs
-          brightness: Brightness.light,
         ),
         useMaterial3: true,
       ),

@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/breathing_phase.dart';
-import '../../../../shared/services/app_logger.dart';
-import '../../../../shared/providers/audio_provider.dart';
+import 'package:mobile/features/breathing/domain/breathing_phase.dart';
+import 'package:mobile/shared/services/app_logger.dart';
+import 'package:mobile/shared/providers/audio_provider.dart';
 
 /// Enhanced breathing state containing all information needed for the UI
 class BreathingState {
@@ -298,6 +298,6 @@ class BreathingController extends StateNotifier<BreathingState> with LoggerMixin
 }
 
 /// Provider for the breathing exercise controller
-final breathingControllerProvider = StateNotifierProvider<BreathingController, BreathingState>((ref) {
+final breathingControllerProvider = StateNotifierProvider.autoDispose<BreathingController, BreathingState>((ref) {
   return BreathingController(ref);
 });

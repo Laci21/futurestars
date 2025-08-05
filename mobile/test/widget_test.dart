@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'dart:ui';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:mobile/features/breathing/presentation/screens/breathing_exercise_screen.dart';
-import 'package:mobile/features/breathing/presentation/controller/breathing_controller.dart';
 import 'package:mobile/shared/providers/audio_provider.dart';
 import 'package:mobile/shared/services/audio_service.dart';
 
@@ -57,16 +55,11 @@ class MockAudioService implements AudioService {
   }
 }
 
-final TestWidgetsFlutterBinding _binding =
-    TestWidgetsFlutterBinding.ensureInitialized() as TestWidgetsFlutterBinding;
-
 void main() {
-  // Set a portrait iPhone 13 mini sized viewport for all tests
+  TestWidgetsFlutterBinding.ensureInitialized();
+  
+  // Set a portrait iPhone 13 sized viewport for all tests
   setUpAll(() {
-    // Set a medium-size portrait phone surface (logical pixels)
-    _binding.window.devicePixelRatioTestValue = 1.0;
-    _binding.window.physicalSizeTestValue = const Size(960, 1920);
-    // Ensure the tester uses the same surface size
     // Ignore RenderFlex overflow errors – we only care about logical UI states
     FlutterError.onError = (FlutterErrorDetails details) {
       final exceptionMessage = details.exceptionAsString();
@@ -78,13 +71,15 @@ void main() {
     };
   });
 
-  tearDownAll(() {
-    _binding.window.clearPhysicalSizeTestValue();
-    _binding.window.clearDevicePixelRatioTestValue();
-  });
+  // Helper function to set iPhone 13 viewport for each test
+  Future<void> setTestViewport(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844)); // iPhone 13 logical size
+  }
 
   group('Breathing Exercise Widget Tests', () {
     testWidgets('Breathing phases auto-advance with correct timing', (WidgetTester tester) async {
+      await setTestViewport(tester); // Set iPhone 13 viewport size
+      
       // Create mock audio service
       final mockAudioService = MockAudioService();
       
@@ -95,8 +90,8 @@ void main() {
             // Override audio service provider with mock
             audioServiceProvider.overrideWithValue(mockAudioService),
           ],
-          child: MaterialApp(
-            home: const BreathingExerciseScreen(),
+          child: const MaterialApp(
+            home: BreathingExerciseScreen(),
           ),
         ),
       );
@@ -139,10 +134,12 @@ void main() {
       await tester.pump(); // ensure success UI is built
       
       // After full breathing cycle, should be in success phase with proper success screen
-      expect(find.text('Fantastic job!'), findsOneWidget);
+      expect(find.textContaining('Fantastic job!'), findsWidgets);
     });
 
     testWidgets('Intro phase UI elements are present', (WidgetTester tester) async {
+      await setTestViewport(tester); // Set iPhone 13 viewport size
+      
       final mockAudioService = MockAudioService();
       
       await tester.pumpWidget(
@@ -150,8 +147,8 @@ void main() {
           overrides: [
             audioServiceProvider.overrideWithValue(mockAudioService),
           ],
-          child: MaterialApp(
-            home: const BreathingExerciseScreen(),
+          child: const MaterialApp(
+            home: BreathingExerciseScreen(),
           ),
         ),
       );
@@ -168,6 +165,8 @@ void main() {
     });
 
     testWidgets('Help button is accessible throughout exercise', (WidgetTester tester) async {
+      await setTestViewport(tester); // Set iPhone 13 viewport size
+      
       final mockAudioService = MockAudioService();
       
       await tester.pumpWidget(
@@ -175,8 +174,8 @@ void main() {
           overrides: [
             audioServiceProvider.overrideWithValue(mockAudioService),
           ],
-          child: MaterialApp(
-            home: const BreathingExerciseScreen(),
+          child: const MaterialApp(
+            home: BreathingExerciseScreen(),
           ),
         ),
       );

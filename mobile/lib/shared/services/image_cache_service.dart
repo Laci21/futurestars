@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'app_logger.dart';
+import 'package:mobile/shared/services/app_logger.dart';
 
 /// Centralized image pre-caching service for smooth performance
 /// Pre-loads images before they're needed to eliminate loading delays
@@ -148,8 +147,6 @@ class ImageCacheService with LoggerMixin {
 /// Mixin to add image pre-caching capabilities to widgets
 /// Flutter Learning: Mixins provide reusable functionality
 mixin ImageCacheMixin {
-  final ImageCacheService _imageCacheService = ImageCacheService();
-
   /// Pre-cache images in a widget's initState
   Future<void> precacheImagesForWidget(BuildContext context, List<String> imagePaths) async {
     try {

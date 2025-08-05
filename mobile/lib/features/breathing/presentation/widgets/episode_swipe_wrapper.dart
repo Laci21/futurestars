@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'episode_navigation_button.dart';
+import 'package:mobile/features/breathing/presentation/widgets/episode_navigation_button.dart';
 
 /// Wrapper widget that adds swipe gesture detection and episode navigation buttons
 /// to screens that support episode navigation

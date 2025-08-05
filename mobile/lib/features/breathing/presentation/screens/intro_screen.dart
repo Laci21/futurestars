@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../widgets/gradient_background.dart';
-import '../widgets/oracle_avatar.dart';
-import '../widgets/breathing_bubble.dart';
-import '../widgets/progress_line.dart';
-import '../widgets/responsive_text.dart';
-import '../../../../shared/services/image_cache_service.dart';
+import 'package:mobile/features/breathing/presentation/widgets/gradient_background.dart';
+import 'package:mobile/features/breathing/presentation/widgets/oracle_avatar.dart';
+
+import 'package:mobile/features/breathing/presentation/widgets/progress_line.dart';
+import 'package:mobile/features/breathing/presentation/widgets/responsive_text.dart';
+import 'package:mobile/shared/services/image_cache_service.dart';
 
 /// Intro screen for the breathing exercise
 /// Shows Oracle's welcome message and start button
@@ -73,7 +73,6 @@ class _IntroScreenState extends State<IntroScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 24.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                       // Oracle avatar with proper sizing
                       const OracleAvatar(size: 50),
@@ -112,7 +111,6 @@ class _IntroScreenState extends State<IntroScreen>
                                 BoxShadow(
                                   color: const Color(0xFF1A1D4A).withOpacity(0.4),
                                   blurRadius: 8,
-                                  spreadRadius: 0,
                                   offset: const Offset(0, 3),
                                 ),
                               ],

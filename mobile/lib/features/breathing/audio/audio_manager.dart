@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_session/audio_session.dart';
-import '../../../shared/services/audio_service.dart';
-import '../../../shared/services/app_logger.dart';
+import 'package:mobile/shared/services/audio_service.dart';
+import 'package:mobile/shared/services/app_logger.dart';
 
 /// Production audio manager for the breathing exercise
 /// Handles background music, Oracle voiceovers, and audio focus management
@@ -275,7 +275,7 @@ class AudioManager with LoggerMixin implements AudioService {
   ) async {
     try {
       final currentVolume = fromVolume ?? player.volume;
-      final stepCount = 10;
+      const stepCount = 10;
       final stepDuration = Duration(milliseconds: duration.inMilliseconds ~/ stepCount);
       final volumeStep = (toVolume - currentVolume) / stepCount;
       

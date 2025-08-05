@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'responsive_text.dart';
-import '../../domain/breathing_phase.dart';
+import 'package:mobile/features/breathing/presentation/widgets/responsive_text.dart';
+import 'package:mobile/features/breathing/domain/breathing_phase.dart';
 
 /// Clean phase title display widget for breathing exercise screens
 /// Shows the current phase with proper styling and responsive layout
@@ -98,19 +98,19 @@ class PhaseTitle extends StatelessWidget {
   /// Get the appropriate title text for each phase
   /// Flutter Learning: Switch statements with enums are type-safe
   String _getTitleForPhase(BreathingPhase phase) {
-    final prefix = showPhasePrefix ? "Phase: " : "";
+    final prefix = showPhasePrefix ? 'Phase: ' : '';
     
     switch (phase) {
       case BreathingPhase.intro:
-        return "${prefix}Welcome";
+        return '${prefix}Welcome';
       case BreathingPhase.inhale:
-        return "${prefix}Inhale";
+        return '${prefix}Inhale';
       case BreathingPhase.hold:
-        return "${prefix}Hold";
+        return '${prefix}Hold';
       case BreathingPhase.exhale:
-        return "${prefix}Exhale";
+        return '${prefix}Exhale';
       case BreathingPhase.success:
-        return "${prefix}Complete";
+        return '${prefix}Complete';
     }
   }
 }
@@ -157,15 +157,15 @@ class PhaseInstructionTitle extends StatelessWidget {
   String _getInstructionForPhase(BreathingPhase phase) {
     switch (phase) {
       case BreathingPhase.intro:
-        return "Take some moment to breathe, transform each inhale into power";
+        return 'Take some moment to breathe, transform each inhale into power';
       case BreathingPhase.inhale:
-        return "Inhale slowly for 5 seconds and fill your lungs";
+        return 'Inhale slowly for 5 seconds and fill your lungs';
       case BreathingPhase.hold:
-        return "Hold in the breath for a while...";
+        return 'Hold in the breath for a while...';
       case BreathingPhase.exhale:
-        return "Exhale slowly for 5 seconds and empty your lungs";
+        return 'Exhale slowly for 5 seconds and empty your lungs';
       case BreathingPhase.success:
-        return "Fantastic job! Your breath is your superpower, offering strength and calm.";
+        return 'Fantastic job! Your breath is your superpower, offering strength and calm.';
     }
   }
 }
@@ -191,7 +191,6 @@ class CompactPhaseIndicator extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: (color ?? Colors.white).withOpacity(0.3),
-          width: 1,
         ),
       ),
       child: ResponsiveText(
@@ -222,7 +221,7 @@ class PhaseProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final phases = BreathingPhase.values;
+    const phases = BreathingPhase.values;
     final currentIndex = phases.indexOf(currentPhase);
 
     return Row(

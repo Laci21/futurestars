@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'responsive_text.dart';
-import 'help_button.dart';
+import 'package:mobile/features/breathing/presentation/widgets/responsive_text.dart';
+import 'package:mobile/features/breathing/presentation/widgets/help_button.dart';
 
 /// Help overlay that displays breathing exercise instructions
 /// Matches the design from help.png with white bubble and close button
@@ -36,7 +36,6 @@ class HelpOverlay extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.15),
             blurRadius: 20,
-            spreadRadius: 0,
             offset: const Offset(0, 8),
           ),
         ],

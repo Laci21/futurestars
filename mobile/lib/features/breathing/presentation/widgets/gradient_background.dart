@@ -165,7 +165,7 @@ class GradientBackground extends StatelessWidget {
             const Color(0xFF0F1438).withOpacity(0.3), // Light overlay for CTA area
             Colors.transparent, // Clear at bottom (keep illustration visible)
           ],
-          stops: [0.0, 0.2, 0.5, 0.8, 1.0],
+          stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
         ),
       ),
     );
@@ -251,10 +251,6 @@ class _RightTreesPainter extends CustomPainter {
 class _GazeboPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final darkPaint = Paint()
-      ..color = const Color(0xFF0A0D2A).withOpacity(0.9)
-      ..style = PaintingStyle.fill;
-    
     final lightPaint = Paint()
       ..color = const Color(0xFF1A1D4A).withOpacity(0.7)
       ..style = PaintingStyle.fill;
@@ -285,7 +281,7 @@ class _GazeboPainter extends CustomPainter {
     canvas.drawPath(roofPath, roofPaint);
 
     // Gazebo pillars/supports (more architectural)
-    final pillarWidth = 6.0;
+    const pillarWidth = 6.0;
     final pillarHeight = size.height * 0.4;
     
     // Left pillar
@@ -345,7 +341,7 @@ class _WoodenStepsPainter extends CustomPainter {
 
     // Draw multiple step levels
     for (int i = 0; i < 4; i++) {
-      final stepHeight = 12.0;
+      const stepHeight = 12.0;
       final stepWidth = size.width - (i * 20);
       final stepY = size.height - (i * stepHeight);
       

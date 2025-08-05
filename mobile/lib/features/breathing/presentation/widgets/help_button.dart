@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'help_overlay.dart';
+import 'package:mobile/features/breathing/presentation/widgets/help_overlay.dart';
 
 /// Content type for help overlay
 enum HelpContentType {
@@ -60,7 +60,6 @@ class HelpButton extends StatelessWidget {
   void _showHelpOverlay(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: true, // Allow dismissing by tapping outside
       barrierColor: Colors.black.withOpacity(0.3), // Subtle overlay
       builder: (context) => HelpOverlay(contentType: contentType),
     );

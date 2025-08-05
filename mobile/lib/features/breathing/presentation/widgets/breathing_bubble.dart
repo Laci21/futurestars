@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../controller/breathing_animation_controller.dart';
+import 'package:mobile/features/breathing/presentation/controller/breathing_animation_controller.dart';
 
 /// The central breathing bubble that animates during the exercise
 /// - Scales with breathing phases (grows on inhale, shrinks on exhale)
