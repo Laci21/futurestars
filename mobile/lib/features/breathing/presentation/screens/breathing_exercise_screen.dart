@@ -280,7 +280,8 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
             AnimatedBuilder(
               animation: _animationController.master,
               builder: (context, child) {
-                final currentPhase = _animationController.getCurrentPhase();
+                // Use state phase so the correct instruction appears immediately
+                final currentPhase = ref.read(breathingControllerProvider).phase.name;
                 return _buildOracleInstructionBubble(currentPhase);
               },
             ),

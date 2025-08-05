@@ -40,7 +40,10 @@ class AudioManager with LoggerMixin implements AudioService {
     try {
       // Initialize audio session
       _audioSession = await AudioSession.instance;
-      await _audioSession.configure(const AudioSessionConfiguration.music());
+      await _audioSession.configure(const AudioSessionConfiguration(
+        avAudioSessionCategory: AVAudioSessionCategory.playback,
+        avAudioSessionCategoryOptions: AVAudioSessionCategoryOptions.duckOthers,
+      ));
 
       // Initialize players
       _backgroundMusicPlayer = AudioPlayer();
@@ -66,6 +69,7 @@ class AudioManager with LoggerMixin implements AudioService {
   Future<void> _loadBackgroundMusic() async {
     try {
       await _backgroundMusicPlayer.setAsset('assets/audio/background_music.m4a');
+      await _backgroundMusicPlayer.setVolume(0.1);
       _backgroundMusicLoaded = true;
       logInfo('Background music loaded successfully');
     } catch (e, stackTrace) {
@@ -104,6 +108,7 @@ class AudioManager with LoggerMixin implements AudioService {
     
     try {
       await _backgroundMusicPlayer.setLoopMode(LoopMode.one);
+      await _backgroundMusicPlayer.setVolume(0.1);
       await _backgroundMusicPlayer.play();
       logInfo('Background music started');
     } catch (e, stackTrace) {
@@ -127,7 +132,7 @@ class AudioManager with LoggerMixin implements AudioService {
     
     try {
       // Duck background music volume smoothly
-      await _fadeVolume(_backgroundMusicPlayer, 1.0, 0.3, const Duration(milliseconds: 300));
+      await _fadeVolume(_backgroundMusicPlayer, null, 0.05, const Duration(milliseconds: 300));
       
       // Load and play voiceover with detailed error handling
       try {
@@ -150,12 +155,12 @@ class AudioManager with LoggerMixin implements AudioService {
       }
       
       // Restore background music volume smoothly
-      await _fadeVolume(_backgroundMusicPlayer, 0.3, 1.0, const Duration(milliseconds: 300));
+      await _fadeVolume(_backgroundMusicPlayer, null, 0.1, const Duration(milliseconds: 300));
       
     } catch (e, stackTrace) {
       logError('Overall voiceover process failed for $clipName', e, stackTrace);
       // Restore volume even on error
-      await _fadeVolume(_backgroundMusicPlayer, null, 1.0, const Duration(milliseconds: 300));
+      await _fadeVolume(_backgroundMusicPlayer, null, 0.1, const Duration(milliseconds: 300));
     }
   }
 
@@ -168,7 +173,7 @@ class AudioManager with LoggerMixin implements AudioService {
       
       // Restore background music volume if it was ducked
       if (_backgroundMusicLoaded && _backgroundMusicPlayer.playing) {
-        await _fadeVolume(_backgroundMusicPlayer, null, 1.0, const Duration(milliseconds: 300));
+        await _fadeVolume(_backgroundMusicPlayer, null, 0.1, const Duration(milliseconds: 300));
       }
     } catch (e, stackTrace) {
       logError('Failed to stop voiceover', e, stackTrace);
@@ -211,6 +216,7 @@ class AudioManager with LoggerMixin implements AudioService {
   Future<void> resumeAll() async {
     if (!_isInitialized) return;
     
+    await _backgroundMusicPlayer.setVolume(0.1);
     await _backgroundMusicPlayer.play();
   }
 

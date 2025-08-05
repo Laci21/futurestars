@@ -52,7 +52,7 @@ This feature delivers a guided breathing exercise that helps young sports talent
 ![Inhale Phase](../images/inhale.png)
 
 - Prompt: *“Inhale slowly for 5 seconds and fill your lungs.”*
-- Animation: A glowing bubble descends slowly over 5 seconds.
+- Animation: The breathing bubble gently grows in size over 5 seconds.
 - Timer overlay: “Inhale – 5 → 1”
 - Oracle speaks the prompt.
 - Smooth transition into Hold after 5 seconds.
@@ -65,8 +65,8 @@ This feature delivers a guided breathing exercise that helps young sports talent
 - Prompt: *“Hold the breath for a while…”*
 - Oracle speaks once.
 - Bubble pulses gently in place.
-- Countdown optional (or hidden for immersive feel).
-- Subtle waveform animates in background.
+- Countdown replaced by a pause icon for clarity.
+- Animated sound-wave bars appear above the bubble during timed phases.
 - Transitions automatically after 5 seconds.
 
 ---
@@ -75,9 +75,9 @@ This feature delivers a guided breathing exercise that helps young sports talent
 ![Exhale Phase](../images/exhale.png)
 
 - Prompt: *“Exhale slowly for 5 seconds and empty your lungs.”*
-- Animation: Bubble rises or shrinks gradually over 5 seconds.
+- Animation: Bubble shrinks back to its original size over 5 seconds.
 - Oracle speaks once.
-- Subtle sound cue for breath out (e.g., air or wave).
+- No additional exhale sound cue (Oracle voice-over only).
 - Transition to success after countdown.
 
 ---
@@ -90,7 +90,7 @@ This feature delivers a guided breathing exercise that helps young sports talent
 - Subtext: *“Trust it to guide you and empower your journey ahead.”*
 - Oracle speaks full text.
 - Music fades out.
-- Tap button continues to next episode (or placeholder screen).
+- Swipe left (or tap right arrow) continues to next episode.
 
 ---
 
@@ -125,13 +125,13 @@ In V1, success will be evaluated qualitatively:
 | Area | Detail |
 |------|--------|
 | **Platform** | Flutter mobile-first (iOS, Android), also works on web |
-| **Animations** | Bubble descent, pulsing hold, and ascent should use `AnimationController` |
+| **Animations** | Bubble scaling (grow → pulse → shrink) driven by `AnimationController` |
 | **Offline** | All audio and visuals must be available offline |
-| **Audio Format** | `.mp3` (universal support) |
-| **Voiceovers** | Preloaded audio files for Oracle: 5 clips total |
-| **State Management** | Linear phase flow, with final screen requiring manual tap |
+| **Audio Format** | `.m4a` (bundled high-quality) |
+| **Voiceovers** | Bundled Oracle clips (lazy-loaded during playback) |
+| **State Management** | Linear phase flow, with final screen requiring a left swipe |
 | **Error Handling** | If voiceover or music fails to load, fallback to text-only prompt |
-| **Accessibility** | No screen reader/haptics for V1 — deferred for future |
+| **Accessibility** | Basic screen-reader semantics and haptic feedback included |
 
 ---
 
