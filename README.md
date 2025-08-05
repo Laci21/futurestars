@@ -16,6 +16,18 @@
 
 ---
 
+## 🎬 App Demo
+
+<div align="center">
+
+![App Demo](./images/app-demo.gif)
+
+*Experience the complete breathing exercise flow in action*
+
+</div>
+
+---
+
 ## 📱 Overview
 
 FutureStars Breathing Exercise is a mobile application designed to help young athletes mentally reset and refocus between challenges. Through guided breathing exercises narrated by "The Oracle," athletes learn to harness their breath as a tool for strength, discipline, and calm.
