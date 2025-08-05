@@ -124,7 +124,7 @@ class HelpOverlay extends StatelessWidget {
       
       // Bullet points
       ..._buildBulletPoints([
-        'Tap "Begin Breathing" to start',
+        'Tap "Start the Breath Exercise" to start',
         'Follow the Oracle\'s voice instructions',
         'Inhale for 5 seconds when prompted',
         'Hold your breath briefly',

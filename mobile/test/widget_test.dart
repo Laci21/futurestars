@@ -105,7 +105,7 @@ void main() {
       await tester.pump();
       
       // === PHASE 1: Verify intro phase ===
-      expect(find.text('Begin Breathing'), findsOneWidget);
+      expect(find.text('Start the Breath Exercise'), findsOneWidget);
       expect(find.text('transform each inhale into power'), findsOneWidget);
       
       // Tap the "Begin Breathing" button to start the exercise
@@ -113,7 +113,7 @@ void main() {
       await tester.pump();
       
       // Verify we're no longer in intro phase after button tap
-      expect(find.text('Begin Breathing'), findsNothing);
+      expect(find.text('Start the Breath Exercise'), findsNothing);
       
       // === SIMPLIFIED TEST: Just verify phase transitions work ===
       // The core test: breathing phases should advance with animation timing
@@ -159,7 +159,7 @@ void main() {
       await tester.pump();
       
       // Verify intro phase elements
-      expect(find.text('Begin Breathing'), findsOneWidget);
+      expect(find.text('Start the Breath Exercise'), findsOneWidget);
       expect(find.byIcon(Icons.arrow_forward), findsOneWidget);
       expect(find.byIcon(Icons.help_outline), findsOneWidget); // Help button
       

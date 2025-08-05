@@ -215,7 +215,7 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
               children: [
                 // CTA label above button
                 Text(
-                  'Begin Breathing',
+                  'Start the Breath Exercise',
                   style: ResponsiveTextStyles.ctaLabel,
                   textAlign: TextAlign.center,
                 ),
@@ -243,7 +243,7 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                       onTap: _startBreathingExercise,
                       borderRadius: BorderRadius.circular(28),
                       child: Semantics(
-                        label: 'Begin breathing exercise',
+                        label: 'Start the breath exercise',
                         hint: 'Start the guided breathing exercise with Oracle instructions',
                         button: true,
                         child: const Center(
