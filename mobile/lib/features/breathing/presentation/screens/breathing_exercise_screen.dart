@@ -151,15 +151,18 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-                          // Oracle avatar with text layout per design - avatar only left to first line
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // First row: Oracle avatar left, only first line of text right
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
+            // Minimal top spacer to match breathing screens text position
+            const SizedBox(height: 60),
+            
+            // Oracle avatar with text layout per design - avatar only left to first line
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // First row: Oracle avatar left, only first line of text right
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
                     const OracleAvatar(size: 50),
                     const SizedBox(width: 16),
                     
@@ -208,7 +211,8 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                 ],
               ),
             
-            const Spacer(), // Flexible space before CTA
+            // Flexible space before CTA to align with breathing screens
+            const Spacer(),
             
             // CTA section with label and circular button (matching design)
             Column(
@@ -273,9 +277,12 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
         constraints: const BoxConstraints(maxWidth: 400),
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            // Top spacer to move content more toward center
+            const Spacer(flex: 1),
+            
             // Oracle avatar with instruction speech bubble (per design)
             AnimatedBuilder(
               animation: _animationController.master,
@@ -285,6 +292,8 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                 return _buildOracleInstructionBubble(currentPhase);
               },
             ),
+            
+            const SizedBox(height: 40), // Increased spacing between text and wave
             
             // Sound waves above the bubble (animated during breathing)
             AnimatedBuilder(
@@ -300,7 +309,7 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
               },
             ),
             
-            const SizedBox(height: 24), // Space between sound waves and bubble
+            const SizedBox(height: 48), // Increased space between sound waves and bubble
             
             // Animated breathing bubble (handles all phases automatically)
             BreathingBubble(
@@ -308,21 +317,21 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
               currentPhase: _animationController.getCurrentPhase(),
             ),
             
-            // Add flexible space to push helper text to bottom
-            const Spacer(),
+            // Flexible space to push helper text to bottom
+            const Spacer(flex: 2),
             
-                          // Helper text at bottom of screen
-              Padding(
-                padding: const EdgeInsets.only(bottom: 40),
-                child: Text(
-                  'Follow the breathing instructions',
-                  textAlign: TextAlign.center,
-                  style: ResponsiveTextStyles.body.copyWith(
-                    color: Colors.white.withOpacity(0.35), // Same opacity as episode label
-                    fontSize: 14,
-                  ),
+            // Helper text at bottom of screen
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40),
+              child: Text(
+                'Follow the breathing instructions',
+                textAlign: TextAlign.center,
+                style: ResponsiveTextStyles.body.copyWith(
+                  color: Colors.white.withOpacity(0.35), // Same opacity as episode label
+                  fontSize: 14,
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -437,7 +446,8 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 40), // Top spacing to match other screens
+              // Minimal top spacer to match breathing screens text position
+              const SizedBox(height: 60),
               // Oracle avatar with success message (per success1.png and success2.png)
               Column(
                 children: [
@@ -486,7 +496,7 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                 ],
               ),
               
-              const SizedBox(height: 16),
+              const SizedBox(height: 48), // Increased spacing to match breathing screens
               
               // Success green icon (hand gesture like design)
               Container(
@@ -510,7 +520,10 @@ class _BreathingExerciseScreenState extends ConsumerState<BreathingExerciseScree
                 ),
               ),
               
-              const SizedBox(height: 160), // Extra bottom spacing for episode navigation
+              // Bottom spacer to align with other screens  
+              const Spacer(),
+              
+              const SizedBox(height: 40), // Bottom padding
             ],
           ),
         ),

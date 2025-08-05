@@ -41,8 +41,9 @@ class Episode3PlaceholderScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 40), // Top spacing to match Episode 2
-                    // Oracle avatar with coming soon message
+                          // Minimal top spacer to match other screens text position
+                          const SizedBox(height: 60),
+                          // Oracle avatar with coming soon message
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -95,7 +96,7 @@ class Episode3PlaceholderScreen extends StatelessWidget {
                       ],
                     ),
                     
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 48), // Increased spacing to match other screens
                     
                     // Placeholder icon - use a star or similar
                     Container(
@@ -116,7 +117,10 @@ class Episode3PlaceholderScreen extends StatelessWidget {
                       ),
                     ),
                     
-                          const SizedBox(height: 120), // Bottom spacing for episode navigation
+                          // Bottom spacer to match other screens
+                          const Spacer(),
+                          
+                          const SizedBox(height: 40), // Bottom padding
                         ],
                       ),
                     ),

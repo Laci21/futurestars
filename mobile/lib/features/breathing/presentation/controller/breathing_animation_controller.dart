@@ -41,13 +41,13 @@ class BreathingAnimationController {
     // Bubble scale: grows during inhale, stays during hold, shrinks during exhale
     bubbleScale = TweenSequence<double>([
       TweenSequenceItem(
-        tween: ConstantTween<double>(1.0), // Static during intro
+        tween: ConstantTween<double>(0.7), // Start at smaller size during intro
         weight: 5, // 1 second
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.2).chain(
+        tween: Tween<double>(begin: 0.7, end: 1.2).chain(
           CurveTween(curve: Curves.easeInOutCubic)
-        ), // Grow moderately during inhale
+        ), // Start smaller and grow moderately during inhale
         weight: 25, // 5 seconds
       ),
       TweenSequenceItem(
@@ -55,13 +55,13 @@ class BreathingAnimationController {
         weight: 25, // 5 seconds
       ),
       TweenSequenceItem(
-        tween: Tween<double>(begin: 1.2, end: 1.0).chain(
+        tween: Tween<double>(begin: 1.2, end: 0.7).chain(
           CurveTween(curve: Curves.easeInOutCubic)
-        ), // Shrink during exhale
+        ), // Shrink smaller during exhale
         weight: 25, // 5 seconds
       ),
       TweenSequenceItem(
-        tween: ConstantTween<double>(1.0), // Static during success
+        tween: ConstantTween<double>(0.7), // Return to smaller size during success
         weight: 20, // 4 seconds
       ),
     ]).animate(master);
